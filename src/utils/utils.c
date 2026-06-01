@@ -34,14 +34,23 @@ void list_dir(const char *path, const char *filter)
     closedir(dir);
 }
 
-void print(const char *msg, const char *code)
+void print(const char *code, const char *msg, ...)
 {
+    va_list args;
+    va_start(args, msg);
+
     if (msg == NULL || msg[0] == '\0')
+    {
+        va_end(args);
         return;
+    }
 
     if (code == NULL || code[0] == '\0')
     {
         printf("%s\n", msg);
+        vprintf(msg, args);
+
+        va_end(args);
         return;
     }
 
@@ -58,10 +67,17 @@ void print(const char *msg, const char *code)
 
     if (color[0] != '\0')
     {
-        printf("%s%s[%s]%s %s%s\n", color, BOLD, code, RESET, msg, RESET);
+        printf("%s%s[%s]%s ", color, BOLD, code, RESET);
+        vprintf(msg, args);
+        errno == 0 ? printf("") : printf(" (%s)", strerror(errno));
+        printf("\n");
     }
     else
     {
         printf("%s\n", msg);
+        vprintf(msg, args);
     }
+
+    va_end(args);
+    return;
 }

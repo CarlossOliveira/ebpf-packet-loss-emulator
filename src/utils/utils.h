@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
+#include <stdarg.h>
+#include <errno.h>
 
 #define RED "\033[31m"
 #define YELLOW "\033[33m"
@@ -18,7 +20,7 @@
 #define CAUTION "CAUTION"
 #define SUCCESS "SUCCESS"
 
-void print(const char *msg, const char *code);
+void print(const char *code, const char *msg, ...);
 void list_dir(const char *path, const char *filter);
 
 #endif // UTILS_H

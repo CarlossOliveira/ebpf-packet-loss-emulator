@@ -12,21 +12,21 @@ int main(int argc, char *argv[])
 {
     if (argc != 2)
     {
-        print("Usage: %s <interface>\n", ERROR);
+        print(ERROR, "Usage: %s <interface>", argv[0]);
         return 1;
     }
 
     while (active)
     {
-        print("Press Ctrl+C to exit...\n", NULL);
-        print("Please select one of the following behaviors:\n", NULL);
+        print(ERROR, "Press Ctrl+C to exit...");
+        print(NULL, "Please select one of the following behaviors:");
         list_dir(BPF_MODULES_DIR, ".bpf");
 
         fflush(stdin);
         char choice[256];
         if (fgets(choice, sizeof(choice), stdin) == NULL)
         {
-            print("Error reading input\n", ERROR);
+            print(ERROR, "Error reading input");
             continue;
         }
         choice[strcspn(choice, "\n")] = 0; // Remove newline character
@@ -34,28 +34,28 @@ int main(int argc, char *argv[])
         // Handle user choice and apply corresponding eBPF module
         if (attach_module(choice, argv[1]) != 0)
         {
-            print("Failed to attach module: %s\n", ERROR);
+            print(ERROR, "Failed to attach module: %s", choice);
         }
         else
         {
-            print("Module %s attached successfully\n", SUCCESS);
-            print("Press any key to change the module...\n", NULL);
+            print(SUCCESS, "Module %s attached successfully", choice);
+            print(NULL, "Press any key to change the module...");
             getchar(); // Wait for any key press to change the module
         }
 
         if (detach_module(choice, argv[1]) != 0)
         {
-            print("Failed to detach module: %s\n", ERROR);
+            print(ERROR, "Failed to detach module: %s", choice);
         }
         else
         {
-            print("Module %s detached successfully\n", SUCCESS);
+            print(SUCCESS, "Module %s detached successfully", choice);
         }
     }
 
     if (cleanup() != 0)
     {
-        print("Cleanup failed\n", ERROR);
+        print(ERROR, "Cleanup failed");
         return 1;
     }
 
