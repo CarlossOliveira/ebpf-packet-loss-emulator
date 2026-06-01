@@ -49,6 +49,7 @@ void print(const char *code, const char *msg, ...)
     {
         printf("%s\n", msg);
         vprintf(msg, args);
+        errno == 0 ? printf("") : printf(" (%s)", strerror(errno));
 
         va_end(args);
         return;
@@ -76,6 +77,7 @@ void print(const char *code, const char *msg, ...)
     {
         printf("%s\n", msg);
         vprintf(msg, args);
+        errno == 0 ? printf("") : printf(" (%s)", strerror(errno));
     }
 
     va_end(args);
