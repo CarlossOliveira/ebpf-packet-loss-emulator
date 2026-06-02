@@ -11,6 +11,7 @@ int packet_handler(struct __sk_buff *skb)
     __u64 start_time = bpf_ktime_get_ns();
     __u32 key;
     __u64 value;
+
     int ret = TC_ACT_OK;
 
     if (bpf_get_prandom_u32() & 1)
