@@ -11,3 +11,6 @@
 # Output directories
 bin/
 modules/
+
+# Logs
+*.log

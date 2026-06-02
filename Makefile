@@ -3,6 +3,7 @@ EBPF_CFLAGS := -O2 -g -Wall -Wextra -Wno-unknown-pragmas -target bpf
 
 CC := gcc
 CFLAGS := -Wall -Wextra -Wno-unknown-pragmas
+LIBS := -lbpf -lelf
 
 SRC_DIR := src
 INCLUDE_DIR := $(SRC_DIR)/include
@@ -19,6 +20,7 @@ EBPF_OBJS := $(patsubst $(EBPF_SRC)/%.bpf.c,$(BPF_MODULES_DIR)/%.bpf.o,$(EBPF_SR
 
 APP_SRCS := \
 	$(SRC_DIR)/main.c \
+	$(CORE_DIR)/globals.c \
 	$(CORE_DIR)/setup.c \
 	$(CORE_DIR)/cleanup.c \
 	$(UTILS_DIR)/utils.c
@@ -27,7 +29,7 @@ all: check_dependencies app ebpf
 
 app:
 	@mkdir -p $(OUT_DIR)
-	$(CC) $(CFLAGS) -DAPP -I$(INCLUDE_DIR) $(APP_SRCS) -o $(APP_BIN) -lpthread
+	$(CC) $(CFLAGS) -DAPP -I$(INCLUDE_DIR) $(APP_SRCS) -o $(APP_BIN) $(LIBS)
 
 ebpf: $(EBPF_OBJS)
 
