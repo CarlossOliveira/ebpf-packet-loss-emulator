@@ -19,6 +19,7 @@ extern atomic_bool active;
 extern char *interface;
 extern int attach_point;
 extern int stats_map_fd;
+extern char bpf_module_name[256];
 extern struct bpf_object *ebpf_loaded_program_obj;
 
 int setup(void);
@@ -32,7 +33,7 @@ int open_stats_map(struct bpf_object *obj);
 int detach_ebpf_program(struct bpf_object *obj, const char *interface);
 int unmount_ebpf_module(struct bpf_object *obj, const char *interface);
 int cleanup(void);
-#endif
+#endif // !APP
 
 #ifdef BPF
 #include "vmlinux.h"
@@ -48,6 +49,6 @@ struct
     __type(key, __u32);
     __type(value, __u64);
 } stats_map SEC(".maps");
-#endif
+#endif // !BPF
 
-#endif
+#endif // !GLOBALS_H

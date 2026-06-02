@@ -128,8 +128,9 @@ int dump_stats_to_log_file(void)
     char time_buffer[20];
 
     snprintf(buffer, sizeof(buffer),
-             "--------------------\n[%s]\nPackets processed: %lu\n  Packets dropped: %lu\n  Total execution time: %lu ns\n--------------------",
+             "--------------------\n[%s]\nBPF Module: %s\nPackets processed: %lu\nPackets dropped: %lu\nTotal execution time: %lu ns\n--------------------",
              get_current_time(time_buffer, sizeof(time_buffer)),
+             bpf_module_name,
              (unsigned long)read_from_map(stats_map_fd, PACKETS_PROCESSED),
              (unsigned long)read_from_map(stats_map_fd, PACKETS_DROPPED),
              (unsigned long)read_from_map(stats_map_fd, TOTAL_EXECUTION_TIME));

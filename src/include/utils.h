@@ -18,11 +18,11 @@ uint64_t read_from_map(int map_fd, uint32_t key);
 int dump_to_log_file(const char *filename, const char *data);
 int dump_stats_to_log_file(void);
 char *get_current_time(char *buffer, size_t size);
-#endif
+#endif // !APP
 
 #ifdef BPF
 long update_stats(__u32 key, __u64 value);
 __u64 get_stats(__u32 key);
-#endif
+#endif // !BPF
 
-#endif
+#endif // !UTILS_H

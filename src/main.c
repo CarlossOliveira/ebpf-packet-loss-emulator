@@ -5,16 +5,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include <net/if.h>
 
 static void wait_for_enter(void);
+static int check_sudo(void);
 
 int main(int argc, char *argv[])
 {
+    if (check_sudo() != 0)
+        return 1;
+
     if (argc < 2 || argc > 3)
     {
-        print(ERROR, "Usage: %s <interface> [ingress|egress]", argv[0]);
+        print(ERROR, "Usage: %s <interface> [<attach_point>]", argv[0]);
         return 1;
     }
 
@@ -27,9 +32,11 @@ int main(int argc, char *argv[])
             attach_point = BPF_TC_EGRESS;
         else if (strcmp(argv[2], "ingress") == 0)
             attach_point = BPF_TC_INGRESS;
+        else if ((strcmp(argv[2], "ingress|egress") == 0) || (strcmp(argv[2], "egress|ingress") == 0))
+            attach_point = BPF_TC_INGRESS | BPF_TC_EGRESS;
         else
         {
-            print(ERROR, "Invalid attach point: %s. Use 'ingress' or 'egress'.", argv[2]);
+            print(ERROR, "Invalid attach point: %s. Use 'ingress', 'egress', or 'ingress|egress'.", argv[2]);
             return 1;
         }
     }
@@ -57,8 +64,12 @@ int main(int argc, char *argv[])
         if (choice[0] == '\0')
             continue;
 
+        // Copy the selected module name to the global variable for logging purposes
+        strncpy(bpf_module_name, choice, sizeof(bpf_module_name) - 1);
+        bpf_module_name[sizeof(bpf_module_name) - 1] = '\0';
+
         ebpf_loaded_program_obj = mount_ebpf_module(choice, interface);
-        if (!ebpf_loaded_program_obj)
+        if (ebpf_loaded_program_obj == NULL)
         {
             print(ERROR, "Failed to attach module: %s", choice);
             continue;
@@ -70,8 +81,6 @@ int main(int argc, char *argv[])
         wait_for_enter();
 
     EOP:
-        print(NULL, "detach ifindex=%d attach_point=%d handle=%d priority=%d",
-              if_nametoindex(interface), attach_point, 1, 1);
         if (unmount_ebpf_module(ebpf_loaded_program_obj, interface) != 0)
             print(ERROR, "Failed to detach module: %s", choice);
         else
@@ -92,8 +101,6 @@ int main(int argc, char *argv[])
 static void wait_for_enter(void)
 {
     int c;
-
-    clearerr(stdin);
 
     while (1)
     {
@@ -116,4 +123,14 @@ static void wait_for_enter(void)
             continue;
         }
     }
+}
+
+static int check_sudo(void)
+{
+    if (geteuid() != 0)
+    {
+        print(ERROR, "This program must be run as root.");
+        return 1;
+    }
+    return 0;
 }
