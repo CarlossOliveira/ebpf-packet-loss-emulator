@@ -5,7 +5,7 @@
 #include <net/if.h>
 #include <unistd.h>
 
-int detach_ebpf_program(struct bpf_object *obj, const char *interface_name)
+int detach_bpf_program(struct bpf_object *obj, const char *interface_name)
 {
     if (!obj)
         return 0;
@@ -60,9 +60,9 @@ int detach_ebpf_program(struct bpf_object *obj, const char *interface_name)
     return 0;
 }
 
-int unmount_ebpf_module(struct bpf_object *obj, const char *interface_name)
+int unmount_bpf_module(struct bpf_object *obj, const char *interface_name)
 {
-    int ret = detach_ebpf_program(obj, interface_name);
+    int ret = detach_bpf_program(obj, interface_name);
 
     if (stats_map_fd >= 0)
     {
@@ -73,14 +73,14 @@ int unmount_ebpf_module(struct bpf_object *obj, const char *interface_name)
     if (obj)
         bpf_object__close(obj);
 
-    ebpf_loaded_program_obj = NULL;
+    bpf_loaded_program_obj = NULL;
     return ret;
 }
 
 int cleanup(void)
 {
-    if (ebpf_loaded_program_obj)
-        return unmount_ebpf_module(ebpf_loaded_program_obj, interface);
+    if (bpf_loaded_program_obj)
+        return unmount_bpf_module(bpf_loaded_program_obj, interface);
 
     if (stats_map_fd >= 0)
     {

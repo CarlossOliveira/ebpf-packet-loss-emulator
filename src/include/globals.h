@@ -20,18 +20,18 @@ extern char *interface;
 extern int attach_point;
 extern int stats_map_fd;
 extern char bpf_module_name[256];
-extern struct bpf_object *ebpf_loaded_program_obj;
+extern struct bpf_object *bpf_loaded_program_obj;
 
 int setup(void);
 void signal_setup(void);
 void signal_handler(int signum);
 
-struct bpf_tc_hook attach_ebpf_program(struct bpf_object *obj, const char *interface);
-struct bpf_object *mount_ebpf_module(const char *module_name, const char *interface);
+struct bpf_tc_hook attach_bpf_program(struct bpf_object *obj, const char *interface);
+struct bpf_object *mount_bpf_module(const char *module_name, const char *interface);
 int open_stats_map(struct bpf_object *obj);
 
-int detach_ebpf_program(struct bpf_object *obj, const char *interface);
-int unmount_ebpf_module(struct bpf_object *obj, const char *interface);
+int detach_bpf_program(struct bpf_object *obj, const char *interface);
+int unmount_bpf_module(struct bpf_object *obj, const char *interface);
 int cleanup(void);
 #endif // !APP
 

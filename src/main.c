@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
         strncpy(bpf_module_name, choice, sizeof(bpf_module_name) - 1);
         bpf_module_name[sizeof(bpf_module_name) - 1] = '\0';
 
-        ebpf_loaded_program_obj = mount_ebpf_module(choice, interface);
-        if (ebpf_loaded_program_obj == NULL)
+        bpf_loaded_program_obj = mount_bpf_module(choice, interface);
+        if (bpf_loaded_program_obj == NULL)
         {
             print(ERROR, "Failed to attach module: %s", choice);
             continue;
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
         wait_for_enter();
 
     EOP:
-        if (unmount_ebpf_module(ebpf_loaded_program_obj, interface) != 0)
+        if (unmount_bpf_module(bpf_loaded_program_obj, interface) != 0)
             print(ERROR, "Failed to detach module: %s", choice);
         else
             print(SUCCESS, "Module %s detached successfully", choice);

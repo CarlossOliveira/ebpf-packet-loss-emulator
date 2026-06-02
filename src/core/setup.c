@@ -11,7 +11,7 @@
 
 static atomic_bool stats_dump_requested = false;
 
-struct bpf_tc_hook attach_ebpf_program(struct bpf_object *obj, const char *interface_name)
+struct bpf_tc_hook attach_bpf_program(struct bpf_object *obj, const char *interface_name)
 {
     int ifindex = if_nametoindex(interface_name);
     if (ifindex == 0)
@@ -65,7 +65,7 @@ struct bpf_tc_hook attach_ebpf_program(struct bpf_object *obj, const char *inter
     return hook;
 }
 
-struct bpf_object *mount_ebpf_module(const char *module_name, const char *interface_name)
+struct bpf_object *mount_bpf_module(const char *module_name, const char *interface_name)
 {
     char path[512];
 
@@ -89,7 +89,7 @@ struct bpf_object *mount_ebpf_module(const char *module_name, const char *interf
         return NULL;
     }
 
-    if (attach_ebpf_program(obj, interface_name).ifindex == 0)
+    if (attach_bpf_program(obj, interface_name).ifindex == 0)
     {
         print(ERROR, "Failed to attach eBPF program");
         bpf_object__close(obj);
@@ -132,7 +132,7 @@ int setup(void)
 
     if (pid == 0)
     {
-        char *args[] = {"make", "ebpf", "-f", "../Makefile", NULL};
+        char *args[] = {"make", "bpf", "-f", "../Makefile", NULL};
         execv("/usr/bin/make", args);
     }
     waitpid(pid, NULL, 0);
