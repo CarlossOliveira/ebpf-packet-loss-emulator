@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
         if (fgets(choice, sizeof(choice), stdin) == NULL)
         {
             if (!atomic_load(&active))
-                goto EOP;
+                goto unmount;
             print(ERROR, "Error reading input");
             continue;
         }
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
         print(NULL, "Press Enter to change the module...");
         wait_for_enter();
 
-    EOP:
+    unmount:
         if (unmount_bpf_module(bpf_loaded_program_obj, interface) != 0)
             print(ERROR, "Failed to detach module: %s", choice);
         else
