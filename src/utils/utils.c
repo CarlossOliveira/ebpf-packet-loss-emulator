@@ -47,9 +47,10 @@ void print(const char *code, const char *msg, ...)
 
     if (code == NULL || code[0] == '\0')
     {
-        printf("%s\n", msg);
+        printf("%s ", msg);
         vprintf(msg, args);
         errno == 0 ? printf("") : printf(" (%s)", strerror(errno));
+        printf("\n");
 
         va_end(args);
         return;
@@ -75,9 +76,10 @@ void print(const char *code, const char *msg, ...)
     }
     else
     {
-        printf("%s\n", msg);
+        printf("%s ", msg);
         vprintf(msg, args);
         errno == 0 ? printf("") : printf(" (%s)", strerror(errno));
+        printf("\n");
     }
 
     va_end(args);
