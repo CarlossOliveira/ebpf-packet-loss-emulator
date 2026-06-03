@@ -12,17 +12,18 @@
 
 void list_dir(const char *path, const char *filter);
 void print(const char *code, const char *msg, ...);
+int input(char *prompt, char *buffer, size_t size);
 void lower(char *str);
-int write_to_map(int map_fd, uint32_t key, uint64_t value);
-uint64_t read_from_map(int map_fd, uint32_t key);
+int count_char(const char *str, char c);
+void remove_char(char *str, char c);
+char **strsplit(const char *str, char delim);
+void strsplit_free(char **parts);
+uint64_t read_stats_map(uint8_t key);
 int dump_to_log_file(const char *filename, const char *data);
 int dump_stats_to_log_file(void);
 char *get_current_time(char *buffer, size_t size);
+int check_sudo(void);
+void wait_for_char(char expected_char);
 #endif // !APP
-
-#ifdef BPF
-long update_stats(__u32 key, __u64 value);
-__u64 get_stats(__u32 key);
-#endif // !BPF
 
 #endif // !UTILS_H

@@ -3,7 +3,7 @@ BPF_CFLAGS := -O2 -g -Wall -Wextra -Wno-unknown-pragmas -target bpf
 
 CC := gcc
 CFLAGS := -Wall -Wextra -Wno-unknown-pragmas
-LIBS := -lbpf -lelf
+LIBS := -lbpf -lelf -lreadline
 
 SRC_DIR := src
 INCLUDE_DIR := $(SRC_DIR)/include

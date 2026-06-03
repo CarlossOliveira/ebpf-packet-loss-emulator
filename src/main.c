@@ -1,25 +1,43 @@
 #include "include/globals.h"
 #include "include/utils.h"
 
+#include <bpf/bpf.h>
 #include <stdatomic.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
 
 #include <net/if.h>
 
-static void wait_for_enter(void);
-static int check_sudo(void);
+#define HELP_COMMAND "help"
+#define STATS_COMMAND "stats"
+#define CHANGE_CONFIG_COMMAND "config"
+#define CHANGE_MODULE_COMMAND "change"
+#define CLEAR_SCREEN_COMMAND "clear"
+#define EXIT_COMMAND "exit"
+
+static void parse_command(char *input);
 
 int main(int argc, char *argv[])
 {
+#ifdef DEBUG
+    libbpf_set_print(NULL);
+#endif // DEBUG
+
     if (check_sudo() != 0)
         return 1;
 
     if (argc < 2 || argc > 3)
     {
         print(ERROR, "Usage: %s <interface> [<attach_point>]", argv[0]);
+        return 1;
+    }
+
+    if (if_nametoindex(argv[1]) == 0)
+    {
+        print(ERROR, "Invalid interface: %s", argv[1]);
         return 1;
     }
 
@@ -50,21 +68,16 @@ int main(int argc, char *argv[])
         print(NULL, "Available eBPF modules:");
         list_dir(BPF_MODULES_DIR, ".bpf.o");
 
-        print(NULL, "Please select one of the available behaviors: ");
-        char choice[256];
-        if (fgets(choice, sizeof(choice), stdin) == NULL)
-        {
-            if (!atomic_load(&active))
-                goto unmount;
-            print(ERROR, "Error reading input");
+        char choice[256] = {0};
+        int input_result = input("Enter the name of the eBPF module to load: ", choice, sizeof(choice));
+        if (input_result == -1)
             continue;
-        }
-        choice[strcspn(choice, "\n")] = 0;
+        else if (input_result == 1)
+            goto unmount;
 
         if (choice[0] == '\0')
             continue;
 
-        // Copy the selected module name to the global variable for logging purposes
         strncpy(bpf_module_name, choice, sizeof(bpf_module_name) - 1);
         bpf_module_name[sizeof(bpf_module_name) - 1] = '\0';
 
@@ -74,17 +87,32 @@ int main(int argc, char *argv[])
             print(ERROR, "Failed to attach module: %s", choice);
             continue;
         }
-
-        print(NULL, "\n");
         print(SUCCESS, "Module %s attached successfully", choice);
-        print(NULL, "Press Enter to change the module...");
-        wait_for_enter();
+
+        while (!atomic_load(&bpf_module_change_requested) && atomic_load(&active))
+        {
+            char cmd[256] = {0};
+            int cmd_result = input("> ", cmd, sizeof(cmd));
+            if (cmd_result == -1)
+                continue;
+            else if (cmd_result == 1)
+                goto unmount;
+
+            parse_command(cmd);
+        }
 
     unmount:
-        if (unmount_bpf_module(bpf_loaded_program_obj, interface) != 0)
-            print(ERROR, "Failed to detach module: %s", choice);
-        else
-            print(SUCCESS, "Module %s detached successfully", choice);
+        errno = 0;
+        if (bpf_loaded_program_obj)
+        {
+            if (unmount_bpf_module(bpf_loaded_program_obj, interface) < 0)
+            {
+                print(ERROR, "Failed to detach module: %s", bpf_module_name);
+            }
+            else
+                print(SUCCESS, "Module %s detached successfully", bpf_module_name);
+        }
+        atomic_store(&bpf_module_change_requested, false);
     }
 
     dump_stats_to_log_file();
@@ -93,44 +121,66 @@ int main(int argc, char *argv[])
         print(ERROR, "Cleanup failed");
         return 1;
     }
-    print(SUCCESS, "exited(0)\n");
+    print(SUCCESS, "exited(0)");
 
     return 0;
 }
 
-static void wait_for_enter(void)
+static void parse_command(char *input)
 {
-    int c;
+    lower(input);
 
-    while (1)
+    char **args = strsplit(input, ' ');
+    if (!args || !args[0])
     {
-        c = getchar();
+        print(ERROR, "Invalid command");
+        strsplit_free(args);
+        return;
+    }
 
-        if (c == '\n')
-            return;
-
-        if (c == EOF)
+    if (strcmp(args[0], STATS_COMMAND) == 0)
+    {
+        dump_stats_to_log_file();
+    }
+    else if (strcmp(args[0], CHANGE_MODULE_COMMAND) == 0)
+    {
+        atomic_store(&bpf_module_change_requested, true);
+    }
+    else if (strcmp(args[0], CHANGE_CONFIG_COMMAND) == 0)
+    {
+        int arg = 0;
+        while (args[++arg] != NULL)
         {
-            if (errno == EINTR && atomic_load(&active))
+            char **kv = strsplit(args[arg], '=');
+            if (kv && kv[0] && kv[1])
             {
-                clearerr(stdin);
-                continue;
-            }
-            else if (!atomic_load(&active))
-                return;
+                char key[CONFIG_KEY_SIZE] = {0};
+                snprintf(key, sizeof(key), "%s", kv[0]);
 
-            clearerr(stdin);
-            continue;
+                uint64_t param_value = strtoull(kv[1], NULL, 10);
+
+                if (bpf_map_update_elem(config_map_fd, key, &param_value, BPF_ANY) != 0)
+                    print(ERROR, "Failed to update config map for parameter '%s'", kv[0]);
+                else
+                    print(SUCCESS, "Parameter '%s' updated to %lu", kv[0], (unsigned long)param_value);
+            }
+            else
+                print(ERROR, "Invalid parameter format: %s. Use name=value.", args[arg]);
+            strsplit_free(kv);
         }
     }
-}
-
-static int check_sudo(void)
-{
-    if (geteuid() != 0)
+    else if (strcmp(args[0], HELP_COMMAND) == 0)
+        print(NULL, "Available commands:\n- %s: Dump current stats to log file\n- %s: Change module configuration\n- %s: Change loaded module\n- %s: Show this help message\n- %s: Clear screen\n- %s: Exit", STATS_COMMAND, CHANGE_CONFIG_COMMAND, CHANGE_MODULE_COMMAND, HELP_COMMAND, CLEAR_SCREEN_COMMAND, EXIT_COMMAND);
+    else if (strcmp(args[0], CLEAR_SCREEN_COMMAND) == 0)
     {
-        print(ERROR, "This program must be run as root.");
-        return 1;
+        system("clear");
     }
-    return 0;
+    else if (strcmp(args[0], EXIT_COMMAND) == 0)
+    {
+        atomic_store(&active, false);
+    }
+    else if (args[0][0] != '\0')
+        print(ERROR, "Unknown command, type %s for help", HELP_COMMAND);
+
+    strsplit_free(args);
 }

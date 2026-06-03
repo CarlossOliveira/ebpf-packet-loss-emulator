@@ -9,7 +9,7 @@ int packet_handler(struct __sk_buff *skb)
     (void)skb;
 
     __u64 start_time = bpf_ktime_get_ns();
-    __u32 key;
+    __u8 key;
     __u64 value;
 
     key = PACKETS_PROCESSED;
