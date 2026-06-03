@@ -8,9 +8,8 @@
 *.out
 *.app
 
-# Output directories
-bin/
-modules/
+# Output directorie
+build/
 
 # Logs
 *.log

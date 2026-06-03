@@ -2,7 +2,7 @@
 #define GLOBALS_H
 
 #define LOG_FILE "packet_loss_emulator.log"
-#define BPF_MODULES_DIR "../modules"
+#define BPF_MODULES_DIR "../build/modules"
 #define BPF_MAP_DIR "/sys/fs/bpf"
 
 #define PACKETS_PROCESSED 0
