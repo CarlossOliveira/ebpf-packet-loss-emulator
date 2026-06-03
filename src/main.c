@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
             print(ERROR, "Failed to attach module: %s", choice);
             continue;
         }
-        print(SUCCESS, "Module %s attached successfully", choice);
+        print(SUCCESS, "Module '%s' attached successfully", choice);
 
         while (!atomic_load(&bpf_module_change_requested) && atomic_load(&active))
         {
@@ -98,10 +98,14 @@ int main(int argc, char *argv[])
             else if (cmd_result == 1)
                 goto unmount;
 
+            if (cmd[0] == '\0')
+                continue;
+
             parse_command(cmd);
         }
 
     unmount:
+        dump_stats();
         errno = 0;
         if (bpf_loaded_program_obj)
         {
@@ -110,12 +114,11 @@ int main(int argc, char *argv[])
                 print(ERROR, "Failed to detach module: %s", bpf_module_name);
             }
             else
-                print(SUCCESS, "Module %s detached successfully", bpf_module_name);
+                print(SUCCESS, "Module '%s' detached successfully", bpf_module_name);
         }
         atomic_store(&bpf_module_change_requested, false);
     }
 
-    dump_stats_to_log_file();
     if (cleanup() != 0)
     {
         print(ERROR, "Cleanup failed");
@@ -140,7 +143,7 @@ static void parse_command(char *input)
 
     if (strcmp(args[0], STATS_COMMAND) == 0)
     {
-        dump_stats_to_log_file();
+        dump_stats();
     }
     else if (strcmp(args[0], CHANGE_MODULE_COMMAND) == 0)
     {

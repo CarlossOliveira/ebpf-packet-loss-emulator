@@ -86,16 +86,24 @@ void print(const char *code, const char *msg, ...)
 
 int input(char *prompt, char *buffer, size_t size)
 {
+    if (!buffer || size == 0)
+        return 1;
+
     char *line = readline(prompt ? prompt : "");
 
+    if (!atomic_load(&active) || atomic_load(&bpf_module_change_requested))
+    {
+        free(line);
+        return 1;
+    }
+
     if (!line)
-        return 1; // EOF/Ctrl+D
+        return -1;
 
     if (line[0] != '\0')
         add_history(line);
 
     snprintf(buffer, size, "%s", line);
-
     free(line);
     return 0;
 }
@@ -219,20 +227,29 @@ int dump_to_log_file(const char *filename, const char *data)
     return 0;
 }
 
-int dump_stats_to_log_file(void)
+int dump_stats()
 {
-    char buffer[512];
-    char time_buffer[20];
+    if (stats_map_fd > 0)
+    {
+        char stats[512];
+        char time_buffer[20];
 
-    snprintf(buffer, sizeof(buffer),
-             "--------------------\n[%s]\nBPF Module: %s\nPackets processed: %lu\nPackets dropped: %lu\nTotal execution time: %lu ns\n--------------------",
-             get_current_time(time_buffer, sizeof(time_buffer)),
-             bpf_module_name,
-             (unsigned long)read_stats_map(PACKETS_PROCESSED),
-             (unsigned long)read_stats_map(PACKETS_DROPPED),
-             (unsigned long)read_stats_map(TOTAL_EXECUTION_TIME));
+        snprintf(stats, sizeof(stats),
+                 "---------- STATS ----------\n[%s]\nBPF Module: %s\nPackets processed: %lu\nPackets dropped: %lu\nTotal execution time: %lu ns\n---------------------------",
+                 get_current_time(time_buffer, sizeof(time_buffer)),
+                 bpf_module_name,
+                 (unsigned long)read_stats_map(PACKETS_PROCESSED),
+                 (unsigned long)read_stats_map(PACKETS_DROPPED),
+                 (unsigned long)read_stats_map(TOTAL_EXECUTION_TIME));
 
-    return dump_to_log_file(LOG_FILE, buffer);
+        printf("%s", BLUE);
+        print(NULL, "%s", stats);
+        printf("%s", RESET);
+
+        return dump_to_log_file(LOG_FILE, stats);
+    }
+    else
+        return 1;
 }
 
 char *get_current_time(char *buffer, size_t size)

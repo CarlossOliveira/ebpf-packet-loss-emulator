@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <readline/readline.h>
 
 int attach_bpf_program(struct bpf_object *obj, const char *interface_name)
 {
@@ -159,6 +160,8 @@ int setup(void)
 {
     signal_setup();
 
+    rl_catch_signals = 0; // Disable readline's default signal handling
+
     pid_t pid = fork();
     if (pid == -1)
     {
@@ -195,9 +198,15 @@ void signal_setup(void)
 void signal_handler(int signum)
 {
     if (signum == SIGINT || signum == SIGTERM)
+    {
         atomic_store(&active, false);
+    }
     else if (signum == SIGQUIT && !atomic_load(&bpf_module_change_requested))
     {
         atomic_store(&bpf_module_change_requested, true);
     }
+
+    // Clear the current input line and exit readline loop
+    rl_replace_line("", 0);
+    rl_done = 1;
 }
