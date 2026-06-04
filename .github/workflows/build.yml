@@ -2,9 +2,9 @@ name: Catch Compile Errors
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -12,6 +12,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: ./dependencie_manager.sh install
 
       - name: Compile project
         run: make all
