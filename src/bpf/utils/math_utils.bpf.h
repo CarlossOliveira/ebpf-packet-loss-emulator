@@ -3,8 +3,10 @@
 
 #include <bpf/bpf_helpers.h>
 
-#define PI ((__u64)3141592653589793238ULL)
 #define FIXED_POINT_SCALE ((__u64)1000000000000000000ULL)
+
+#define PI ((__u64)3141592653589793238ULL)
+#define EULER_NUMBER ((__u64)2718281828459045235ULL)
 
 static __always_inline __u64 sqrt_u64(__u64 x) {
   __u64 op = x;
@@ -25,15 +27,4 @@ static __always_inline __u64 sqrt_u64(__u64 x) {
   return res;
 };
 
-static __always_inline __u64 pow_u64(__u64 x, __u64 n) {
-  __u64 result = FIXED_POINT_SCALE;
-
-  if (n <= 0)
-    return result;
-
-  for (__u64 i = 0; i < n; i++)
-    result = (result * x) / FIXED_POINT_SCALE;
-
-  return result;
-}
 #endif // !MATH_UTILS_BPF_H

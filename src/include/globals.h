@@ -10,6 +10,7 @@
 
 #define MAX_CONFIG_ENTRIES 10
 #define CONFIG_KEY_SIZE 64
+#define BPF_STATE_SIZE 1024
 
 #ifdef APP
 #include <bpf/libbpf.h>
@@ -69,6 +70,17 @@ struct {
   __type(key, char[CONFIG_KEY_SIZE]);
   __type(value, __u64);
 } config_map SEC(".maps");
+
+typedef struct {
+  __u8 data[BPF_STATE_SIZE];
+} bpf_state_t;
+struct {
+  __uint(type, BPF_MAP_TYPE_HASH);
+  __uint(max_entries, 1);
+  __type(key, char[CONFIG_KEY_SIZE]);
+  __type(value, bpf_state_t);
+} bpf_module_memory SEC(".maps");
+
 #endif // !BPF
 
 #endif // !GLOBALS_H
