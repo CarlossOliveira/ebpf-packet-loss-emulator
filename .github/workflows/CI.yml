@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  format-check:
+  format:
     runs-on: ubuntu-latest
 
     steps:
