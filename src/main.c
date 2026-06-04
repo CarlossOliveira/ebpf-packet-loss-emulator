@@ -26,7 +26,7 @@ static void parse_command(char *input);
 int main(int argc, char *argv[]) {
 #ifndef DEBUG
   libbpf_set_print(NULL);
-#endif // DEBUG
+#endif // !DEBUG
 
   if (require_root() != 0)
     return 1;
