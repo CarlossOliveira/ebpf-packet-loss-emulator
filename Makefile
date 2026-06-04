@@ -57,9 +57,14 @@ check_dependencies:
 	@command -v clang >/dev/null || (echo "clang not found" && exit 1)
 	@command -v gcc >/dev/null || (echo "gcc not found" && exit 1)
 	@command -v tc >/dev/null || (echo "tc not found" && exit 1)
+	@command -v clang-format >/dev/null || (echo "clang-format not found" && exit 1)
 	@echo "All dependencies are installed."
 
 clean:
 	rm -rf $(OUTPUT_DIR)
+
+format:
+	@command find src   -type f \( -name "*.c" -o -name "*.h" \)   ! -name "vmlinux.h"   -exec clang-format -i {} \;
+	@echo "Code formatted successfully."
 
 .PHONY: all app bpf clean check_dependencies
