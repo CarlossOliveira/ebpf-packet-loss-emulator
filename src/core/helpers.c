@@ -4,6 +4,7 @@
 #include "time_utils.h"
 
 #include <bpf/bpf.h>
+#include <dirent.h>
 #include <errno.h>
 #include <libgen.h>
 #include <limits.h>
@@ -14,9 +15,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <dirent.h>
 #include <string.h>
+#include <sys/stat.h>
 
 int input(char *prompt, char *buffer, size_t size) {
   if (!buffer || size == 0)

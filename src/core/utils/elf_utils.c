@@ -1,23 +1,23 @@
 #include "elf_utils.h"
 
-#include <libelf.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <fcntl.h> 
-#include <unistd.h>
+#include <fcntl.h>
 #include <gelf.h>
+#include <libelf.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 Elf *open_elf_file(const char *filename, Elf_Cmd cmd) {
-    if (elf_version(EV_CURRENT) == EV_NONE) {
+  if (elf_version(EV_CURRENT) == EV_NONE) {
 #ifndef SILENT_ELF
-      printf("elf_utils: Failed to initialize Elf library: %s\n", elf_errmsg(-1));
+    printf("elf_utils: Failed to initialize Elf library: %s\n", elf_errmsg(-1));
 #endif // !SILENT_ELF
-      return NULL;
-    }
-    if (!filename) {
-      return NULL;
-    }
+    return NULL;
+  }
+  if (!filename) {
+    return NULL;
+  }
 
   int fd = open(filename, O_RDONLY);
   if (fd < 0) {
@@ -27,7 +27,7 @@ Elf *open_elf_file(const char *filename, Elf_Cmd cmd) {
     return NULL;
   }
 
-    return elf_begin(fd, cmd, NULL);
+  return elf_begin(fd, cmd, NULL);
 }
 
 int close_elf_file(Elf *elf) {
@@ -43,8 +43,7 @@ int close_elf_file(Elf *elf) {
   return close(fd);
 }
 
-Elf_Scn *goto_elf_section(Elf *elf, const char *section_name)
-{
+Elf_Scn *goto_elf_section(Elf *elf, const char *section_name) {
   Elf_Scn *scn = NULL;
   size_t shstrndx;
 
@@ -91,38 +90,38 @@ Elf_Data *get_elf_section_data(Elf_Scn *scn) {
 #endif // !SILENT_ELF
     return NULL;
   }
-    return data;
+  return data;
 }
 
-void *read_elf_section(const char *filename, const char *section_name, size_t *size)
-{
-    Elf *elf = open_elf_file(filename, ELF_C_READ);
-    if (!elf)
-        return NULL;
+void *read_elf_section(const char *filename, const char *section_name,
+                       size_t *size) {
+  Elf *elf = open_elf_file(filename, ELF_C_READ);
+  if (!elf)
+    return NULL;
 
-    Elf_Scn *scn = goto_elf_section(elf, section_name);
-    if (!scn) {
-        elf_end(elf);
-        return NULL;
-    }
-
-    Elf_Data *data = get_elf_section_data(scn);
-    if (!data || !data->d_buf || data->d_size == 0) {
-        elf_end(elf);
-        return NULL;
-    }
-
-    void *copy = malloc(data->d_size);
-    if (!copy) {
-        elf_end(elf);
-        return NULL;
-    }
-
-    memcpy(copy, data->d_buf, data->d_size);
-
-    if (size)
-        *size = data->d_size;
-
+  Elf_Scn *scn = goto_elf_section(elf, section_name);
+  if (!scn) {
     elf_end(elf);
-    return copy;
+    return NULL;
+  }
+
+  Elf_Data *data = get_elf_section_data(scn);
+  if (!data || !data->d_buf || data->d_size == 0) {
+    elf_end(elf);
+    return NULL;
+  }
+
+  void *copy = malloc(data->d_size);
+  if (!copy) {
+    elf_end(elf);
+    return NULL;
+  }
+
+  memcpy(copy, data->d_buf, data->d_size);
+
+  if (size)
+    *size = data->d_size;
+
+  elf_end(elf);
+  return copy;
 }
