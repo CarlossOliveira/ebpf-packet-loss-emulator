@@ -1,6 +1,6 @@
 #include "globals.h"
 
-#include "fs_utils.h"
+#include "elf_utils.h"
 #include "io_utils.h"
 #include "privilege_utils.h"
 #include "string_utils.h"
@@ -28,8 +28,10 @@ int main(int argc, char *argv[]) {
   libbpf_set_print(NULL);
 #endif // !DEBUG
 
-  if (require_root() != 0)
+  if (require_root() != 0) {
+    print(ERROR, "This program must be run as root.");
     return 1;
+  }
 
   if (argc < 2 || argc > 3) {
     print(ERROR, "Usage: %s <interface> [<attach_point>]", argv[0]);
@@ -93,6 +95,29 @@ int main(int argc, char *argv[]) {
     }
     print(SUCCESS, "Module '%s' attached successfully", choice);
 
+    // Load config keys from the eBPF object section
+    char bpf_elf_filename[512];
+    snprintf(bpf_elf_filename, sizeof(bpf_elf_filename), "%s/%s.bpf.o", BPF_OBJECT_DIR, choice);
+    size_t size;
+    char *bpf_params = read_elf_section(
+        bpf_elf_filename,
+        ".config_keys",
+        &size
+    );
+
+    for (size_t i = 0; i < (size / CONFIG_KEY_SIZE); i++) {
+      snprintf(
+          bpf_config_keys[i],
+          CONFIG_KEY_SIZE,
+          "%s",
+          bpf_params + (i * CONFIG_KEY_SIZE)
+        );
+      if (*(bpf_params + (i * CONFIG_KEY_SIZE)) == '\0') // Sentinel indicating no more valid keys
+        break;
+    }
+    free(bpf_params);
+
+    // Command loop
     while (!atomic_load(&bpf_module_change_requested) && atomic_load(&active)) {
       char cmd[256] = {0};
       int cmd_result = input("> ", cmd, sizeof(cmd));
@@ -151,6 +176,16 @@ static void parse_command(char *input) {
         snprintf(key, sizeof(key), "%s", kv[0]);
 
         uint64_t param_value = strtoull(kv[1], NULL, 10);
+
+        for (int i = 0; i < MAX_CONFIG_ENTRIES; i++) {
+          if (strcmp(bpf_config_keys[i], key) == 0)
+            break;
+          if (bpf_config_keys[i][0] == '\0') {
+            print(ERROR, "Invalid parameter name: %s", kv[0]);
+            strsplit_free(kv);
+            return;
+          }
+        }
 
         if (bpf_map_update_elem(config_map_fd, key, &param_value, BPF_ANY) != 0)
           print(ERROR, "Failed to update config map for parameter '%s'", kv[0]);

@@ -4,9 +4,12 @@
 
 #include "math_utils.bpf.h"
 
-// PARAMETERS: "packet_loss_percentage"
-
 char LICENSE[] SEC("license") = "GPL";
+
+char CONFIG_KEYS[][CONFIG_KEY_SIZE] SEC(".config_keys")= {
+    "packet_loss_percentage",
+    {0}, // Sentinel to mark the end of valid keys
+};
 
 SEC("classifier")
 int packet_handler(struct __sk_buff *skb) {

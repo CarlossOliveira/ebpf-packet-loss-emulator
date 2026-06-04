@@ -8,7 +8,7 @@
 #define PACKETS_DROPPED 1
 #define TOTAL_EXECUTION_TIME 2
 
-#define MAX_CONFIG_ENTRIES 10
+#define MAX_CONFIG_ENTRIES 11
 #define CONFIG_KEY_SIZE 64
 #define BPF_STATE_SIZE 1024
 
@@ -26,6 +26,7 @@ extern int attach_point;
 extern int stats_map_fd;
 extern int config_map_fd;
 extern char bpf_module_name[256];
+extern char bpf_config_keys[MAX_CONFIG_ENTRIES][CONFIG_KEY_SIZE];
 extern struct bpf_object *bpf_loaded_program_obj;
 
 // Setup
@@ -33,7 +34,6 @@ int setup(void);
 void signal_setup(void);
 void signal_handler(int signum);
 
-int open_map(struct bpf_object *obj, char *map_name);
 int attach_bpf_program(struct bpf_object *obj, const char *interface);
 struct bpf_object *mount_bpf_module(const char *module_name,
                                     const char *interface);
@@ -45,6 +45,7 @@ int cleanup(void);
 
 // Helpers
 int input(char *prompt, char *buffer, size_t size);
+int list_dir(const char *path, const char *filter);
 uint64_t read_stats_map(uint8_t key);
 int dump_to_log_file(const char *filename, const char *data);
 int dump_stats(void);
