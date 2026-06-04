@@ -1,0 +1,26 @@
+name: Lint
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy clang-tools bear
+
+      - name: Generate compilation database
+        run: bear -- make clean all
+
+      - name: Run clang-tidy
+        run: |
+          find src -name "*.c" ! -name "*.bpf.c" | \
+            xargs clang-tidy -p .

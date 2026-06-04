@@ -12,10 +12,10 @@
 #define CONFIG_KEY_SIZE 64
 
 #ifdef APP
-#include <stdatomic.h>
-#include <stdbool.h>
 #include <bpf/libbpf.h>
 #include <linux/bpf.h>
+#include <stdatomic.h>
+#include <stdbool.h>
 
 extern atomic_bool active;
 extern atomic_bool bpf_module_change_requested;
@@ -34,7 +34,8 @@ void signal_handler(int signum);
 
 int open_map(struct bpf_object *obj, char *map_name);
 int attach_bpf_program(struct bpf_object *obj, const char *interface);
-struct bpf_object *mount_bpf_module(const char *module_name, const char *interface);
+struct bpf_object *mount_bpf_module(const char *module_name,
+                                    const char *interface);
 
 // Cleanup
 int detach_bpf_program(struct bpf_object *obj, const char *interface);
@@ -55,20 +56,18 @@ int dump_stats(void);
 #define TC_ACT_OK 0
 #define TC_ACT_SHOT 2
 
-struct
-{
-    __uint(type, BPF_MAP_TYPE_HASH);
-    __uint(max_entries, 3);
-    __type(key, __u8);
-    __type(value, __u64);
+struct {
+  __uint(type, BPF_MAP_TYPE_HASH);
+  __uint(max_entries, 3);
+  __type(key, __u8);
+  __type(value, __u64);
 } stats_map SEC(".maps");
 
-struct
-{
-    __uint(type, BPF_MAP_TYPE_HASH);
-    __uint(max_entries, MAX_CONFIG_ENTRIES);
-    __type(key, char[CONFIG_KEY_SIZE]);
-    __type(value, __u64);
+struct {
+  __uint(type, BPF_MAP_TYPE_HASH);
+  __uint(max_entries, MAX_CONFIG_ENTRIES);
+  __type(key, char[CONFIG_KEY_SIZE]);
+  __type(value, __u64);
 } config_map SEC(".maps");
 #endif // !BPF
 
