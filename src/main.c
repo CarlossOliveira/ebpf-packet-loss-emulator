@@ -97,22 +97,17 @@ int main(int argc, char *argv[]) {
 
     // Load config keys from the eBPF object section
     char bpf_elf_filename[512];
-    snprintf(bpf_elf_filename, sizeof(bpf_elf_filename), "%s/%s.bpf.o", BPF_OBJECT_DIR, choice);
+    snprintf(bpf_elf_filename, sizeof(bpf_elf_filename), "%s/%s.bpf.o",
+             BPF_OBJECT_DIR, choice);
     size_t size;
-    char *bpf_params = read_elf_section(
-        bpf_elf_filename,
-        ".config_keys",
-        &size
-    );
+    char *bpf_params =
+        read_elf_section(bpf_elf_filename, ".config_keys", &size);
 
     for (size_t i = 0; i < (size / CONFIG_KEY_SIZE); i++) {
-      snprintf(
-          bpf_config_keys[i],
-          CONFIG_KEY_SIZE,
-          "%s",
-          bpf_params + (i * CONFIG_KEY_SIZE)
-        );
-      if (*(bpf_params + (i * CONFIG_KEY_SIZE)) == '\0') // Sentinel indicating no more valid keys
+      snprintf(bpf_config_keys[i], CONFIG_KEY_SIZE, "%s",
+               bpf_params + (i * CONFIG_KEY_SIZE));
+      if (*(bpf_params + (i * CONFIG_KEY_SIZE)) ==
+          '\0') // Sentinel indicating no more valid keys
         break;
     }
     free(bpf_params);
