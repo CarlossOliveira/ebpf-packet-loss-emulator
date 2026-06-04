@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
   while (atomic_load(&active)) {
     print(NULL, "Press Ctrl+C to exit, Ctrl+\\ to change module.");
     print(NULL, "Available eBPF modules:");
-    if (list_dir(BPF_MODULES_DIR, ".bpf.o") != 0) {
+    if (list_dir(BPF_OBJECT_DIR, ".bpf.o") != 0) {
       print(ERROR, "Failed to list BPF modules");
       return 1;
     }

@@ -142,9 +142,9 @@ struct bpf_object *mount_bpf_module(const char *module_name,
   char path[512];
 
   if (strstr(module_name, ".bpf.o"))
-    snprintf(path, sizeof(path), "%s/%s", BPF_MODULES_DIR, module_name);
+    snprintf(path, sizeof(path), "%s/%s", BPF_OBJECT_DIR, module_name);
   else
-    snprintf(path, sizeof(path), "%s/%s.bpf.o", BPF_MODULES_DIR, module_name);
+    snprintf(path, sizeof(path), "%s/%s.bpf.o", BPF_OBJECT_DIR, module_name);
 
   struct bpf_object *obj = bpf_object__open_file(path, NULL);
   int err = libbpf_get_error(obj);
