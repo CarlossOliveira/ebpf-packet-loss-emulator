@@ -65,12 +65,19 @@ int detach_bpf_program(struct bpf_object *obj, const char *interface_name) {
     }
   }
 
+  // Destroy TC hooks to clean up any remaining state.
   struct bpf_tc_hook hook = {
       .sz = sizeof(hook),
       .ifindex = ifindex,
-      .attach_point = BPF_TC_INGRESS | BPF_TC_EGRESS,
+      .attach_point = BPF_TC_INGRESS,
   };
+  int err = bpf_tc_hook_destroy(&hook);
+  if (err && err != -ENOENT) {
+    print(ERROR, "Failed to destroy TC hook");
+    return -1;
+  }
 
+  hook.attach_point = BPF_TC_EGRESS;
   int err = bpf_tc_hook_destroy(&hook);
   if (err && err != -ENOENT) {
     print(ERROR, "Failed to destroy TC hook");
