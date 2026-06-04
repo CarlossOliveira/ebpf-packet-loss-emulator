@@ -78,7 +78,7 @@ int detach_bpf_program(struct bpf_object *obj, const char *interface_name) {
   }
 
   hook.attach_point = BPF_TC_EGRESS;
-  int err = bpf_tc_hook_destroy(&hook);
+  err = bpf_tc_hook_destroy(&hook);
   if (err && err != -ENOENT) {
     print(ERROR, "Failed to destroy TC hook");
     return -1;
