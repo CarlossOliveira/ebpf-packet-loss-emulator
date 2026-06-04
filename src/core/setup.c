@@ -1,5 +1,6 @@
-#include "../include/globals.h"
-#include "../include/utils.h"
+#include "globals.h"
+
+#include "io_utils.h"
 
 #include <errno.h>
 #include <net/if.h>
@@ -9,6 +10,73 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <readline/readline.h>
+
+int setup(void)
+{
+    signal_setup();
+
+    rl_catch_signals = 0; // Disable readline's default signal handling
+
+    pid_t pid = fork();
+    if (pid == -1)
+    {
+        print(ERROR, "Failed to fork process");
+        return 1;
+    }
+
+    if (pid == 0)
+    {
+        char *args[] = {"make", "bpf", "-f", "../Makefile", NULL};
+        execv("/usr/bin/make", args);
+    }
+    waitpid(pid, NULL, 0);
+
+    return 0;
+}
+
+void signal_setup(void)
+{
+    struct sigaction sa = {0};
+
+    sa.sa_handler = signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+
+    if (sigaction(SIGINT, &sa, NULL) == -1 ||
+        sigaction(SIGQUIT, &sa, NULL) == -1 ||
+        sigaction(SIGTERM, &sa, NULL) == -1)
+    {
+        print(ERROR, "Failed to set signal handler");
+    }
+}
+
+void signal_handler(int signum)
+{
+    if (signum == SIGINT || signum == SIGTERM)
+    {
+        atomic_store(&active, false);
+    }
+    else if (signum == SIGQUIT && !atomic_load(&bpf_module_change_requested))
+    {
+        atomic_store(&bpf_module_change_requested, true);
+    }
+
+    // Clear the current input line and exit readline loop
+    rl_replace_line("", 0);
+    rl_done = 1;
+}
+
+int open_map(struct bpf_object *obj, char *map_name)
+{
+    struct bpf_map *map = bpf_object__find_map_by_name(obj, map_name);
+    if (!map)
+    {
+        print(ERROR, "Failed to find map '%s' in eBPF object", map_name);
+        return -1;
+    }
+
+    return bpf_map__fd(map);
+}
 
 int attach_bpf_program(struct bpf_object *obj, const char *interface_name)
 {
@@ -142,71 +210,4 @@ struct bpf_object *mount_bpf_module(const char *module_name, const char *interfa
     config_map_fd = new_config_map_fd;
 
     return obj;
-}
-
-int open_map(struct bpf_object *obj, char *map_name)
-{
-    struct bpf_map *map = bpf_object__find_map_by_name(obj, map_name);
-    if (!map)
-    {
-        print(ERROR, "Failed to find map '%s' in eBPF object", map_name);
-        return -1;
-    }
-
-    return bpf_map__fd(map);
-}
-
-int setup(void)
-{
-    signal_setup();
-
-    rl_catch_signals = 0; // Disable readline's default signal handling
-
-    pid_t pid = fork();
-    if (pid == -1)
-    {
-        print(ERROR, "Failed to fork process");
-        return 1;
-    }
-
-    if (pid == 0)
-    {
-        char *args[] = {"make", "bpf", "-f", "../Makefile", NULL};
-        execv("/usr/bin/make", args);
-    }
-    waitpid(pid, NULL, 0);
-
-    return 0;
-}
-
-void signal_setup(void)
-{
-    struct sigaction sa = {0};
-
-    sa.sa_handler = signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-
-    if (sigaction(SIGINT, &sa, NULL) == -1 ||
-        sigaction(SIGQUIT, &sa, NULL) == -1 ||
-        sigaction(SIGTERM, &sa, NULL) == -1)
-    {
-        print(ERROR, "Failed to set signal handler");
-    }
-}
-
-void signal_handler(int signum)
-{
-    if (signum == SIGINT || signum == SIGTERM)
-    {
-        atomic_store(&active, false);
-    }
-    else if (signum == SIGQUIT && !atomic_load(&bpf_module_change_requested))
-    {
-        atomic_store(&bpf_module_change_requested, true);
-    }
-
-    // Clear the current input line and exit readline loop
-    rl_replace_line("", 0);
-    rl_done = 1;
 }

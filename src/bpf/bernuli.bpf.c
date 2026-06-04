@@ -1,5 +1,10 @@
-#include "../include/globals.h"
-#include "../include/bpf_utils.bpf.h"
+#include "globals.h"
+
+#include "helpers.bpf.h"
+
+#include "math_utils.bpf.h"
+
+// PARAMETERS: "packet_loss_percentage"
 
 char LICENSE[] SEC("license") = "GPL";
 
@@ -11,9 +16,16 @@ int packet_handler(struct __sk_buff *skb)
     __u64 start_time = bpf_ktime_get_ns();
     __u8 key;
     __u64 value;
+
     int ret = TC_ACT_OK;
 
-    if (bpf_get_prandom_u32() & 1)
+    char percentage_key[CONFIG_KEY_SIZE] = "packet_loss_percentage";
+    __u64 percentage = get_config_value(percentage_key);
+
+    if (percentage > 100)
+        percentage = 100;
+
+    if ((bpf_get_prandom_u32() % 100) < percentage)
     {
         key = PACKETS_DROPPED;
         value = get_stats(key) + 1;

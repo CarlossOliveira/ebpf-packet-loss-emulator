@@ -1,5 +1,9 @@
-#include "include/globals.h"
-#include "include/utils.h"
+#include "globals.h"
+
+#include "io_utils.h"
+#include "fs_utils.h"
+#include "string_utils.h"
+#include "privilege_utils.h"
 
 #include <bpf/bpf.h>
 #include <stdatomic.h>
@@ -8,7 +12,6 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-
 #include <net/if.h>
 
 #define HELP_COMMAND "help"
@@ -26,7 +29,7 @@ int main(int argc, char *argv[])
     libbpf_set_print(NULL);
 #endif // DEBUG
 
-    if (check_sudo() != 0)
+    if (require_root() != 0)
         return 1;
 
     if (argc < 2 || argc > 3)
@@ -66,7 +69,11 @@ int main(int argc, char *argv[])
     {
         print(NULL, "Press Ctrl+C to exit, Ctrl+\\ to dump stats.");
         print(NULL, "Available eBPF modules:");
-        list_dir(BPF_MODULES_DIR, ".bpf.o");
+        if (list_dir(BPF_MODULES_DIR, ".bpf.o") != 0)
+        {
+            print(ERROR, "Failed to list BPF modules");
+            return 1;
+        }
 
         char choice[256] = {0};
         int input_result = input("Enter the name of the eBPF module to load: ", choice, sizeof(choice));

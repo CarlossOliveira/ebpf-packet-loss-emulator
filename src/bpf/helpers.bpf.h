@@ -1,7 +1,8 @@
-#ifndef BPF_UTILS_H
-#define BPF_UTILS_H
+#ifndef HELPERS_BPF_H
+#define HELPERS_BPF_H
 
 #include "globals.h"
+
 #include <bpf/bpf_helpers.h>
 
 static __always_inline long update_stats(__u8 key, __u64 value)
@@ -29,4 +30,4 @@ static __always_inline __u64 get_config_value(const char key[CONFIG_KEY_SIZE])
     return *config_value;
 }
 
-#endif // !BPF_UTILS_H
+#endif // !HELPERS_BPF_H
