@@ -24,7 +24,7 @@
 static void parse_command(char *input);
 
 int main(int argc, char *argv[]) {
-#ifdef DEBUG
+#ifndef DEBUG
   libbpf_set_print(NULL);
 #endif // DEBUG
 
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     return 1;
 
   while (atomic_load(&active)) {
-    print(NULL, "Press Ctrl+C to exit, Ctrl+\\ to dump stats.");
+    print(NULL, "Press Ctrl+C to exit, Ctrl+\\ to change module.");
     print(NULL, "Available eBPF modules:");
     if (list_dir(BPF_MODULES_DIR, ".bpf.o") != 0) {
       print(ERROR, "Failed to list BPF modules");

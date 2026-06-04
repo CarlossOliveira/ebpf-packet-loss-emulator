@@ -1,7 +1,7 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#define LOG_FILE "packet_loss_emulator.log"
+#define LOG_FILE "logs/packet_loss_emulator.log"
 #define BPF_MAP_DIR "/sys/fs/bpf"
 
 #define PACKETS_PROCESSED 0

@@ -11,6 +11,10 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <libgen.h>
+#include <limits.h>
 
 int input(char *prompt, char *buffer, size_t size) {
   if (!buffer || size == 0)
@@ -46,15 +50,34 @@ uint64_t read_stats_map(uint8_t key) {
   return value;
 }
 
-int dump_to_log_file(const char *filename, const char *data) {
+int dump_to_log_file(const char *filename, const char *data)
+{
   FILE *file = fopen(filename, "a");
+
   if (!file) {
-    print(ERROR, "Failed to open log file");
-    return 1;
+    // Extract directory from filename
+    char path[PATH_MAX];
+    snprintf(path, PATH_MAX, "%s", filename);
+
+    // Create directory if it doesn't exist
+    char *dir = dirname(path);
+    if (mkdir(dir, 0755) != 0 && errno != EEXIST) {
+      print(ERROR, "Failed to create log directory");
+      return 1;
+    }
+
+    // Try opening the file again
+    file = fopen(filename, "a");
+
+    if (!file) {
+      print(ERROR, "Failed to open log file");
+      return 1;
+    }
   }
 
   fprintf(file, "%s\n", data);
   fclose(file);
+
   return 0;
 }
 
