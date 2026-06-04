@@ -22,7 +22,6 @@ jobs:
           find src/core src/include src/bpf \
             -type f \( -name "*.c" -o -name "*.h" \) \
             ! -name "vmlinux.h" \
-            ! -name "*.bpf.c" \
             -exec clang-format --dry-run --Werror {} \;
 
   lint:
