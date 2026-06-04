@@ -16,3 +16,6 @@ build/
 
 # IDE configurations
 .vscode/
+
+# Compile commands
+compile_commands.json
