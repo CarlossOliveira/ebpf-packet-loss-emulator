@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Check formatting
+        run: |
+          find src include -type f \( -name "*.c" -o -name "*.h" \) \
+            -exec clang-format --dry-run --Werror {} \;
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Project dependencies
+        run: sudo chmod +x ./dependencie_manager.sh && ./dependencie_manager.sh install
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy clang-tools bear
+
+      - name: Generate compilation database
+        run: bear -- make clean all
+
+      - name: Run clang-tidy
+        run: |
+          find src -name "*.c" ! -name "*.bpf.c" | \
+            xargs clang-tidy -p .
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Project dependencies
+        run: sudo chmod +x ./dependencie_manager.sh && ./dependencie_manager.sh install
+
+      - name: Compile project
+        run: make all
