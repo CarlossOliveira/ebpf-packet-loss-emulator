@@ -4,6 +4,9 @@
 #include "time_utils.h"
 
 #include <bpf/bpf.h>
+#include <errno.h>
+#include <libgen.h>
+#include <limits.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <stdatomic.h>
@@ -12,9 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <errno.h>
-#include <libgen.h>
-#include <limits.h>
 
 int input(char *prompt, char *buffer, size_t size) {
   if (!buffer || size == 0)
@@ -50,8 +50,7 @@ uint64_t read_stats_map(uint8_t key) {
   return value;
 }
 
-int dump_to_log_file(const char *filename, const char *data)
-{
+int dump_to_log_file(const char *filename, const char *data) {
   FILE *file = fopen(filename, "a");
 
   if (!file) {
