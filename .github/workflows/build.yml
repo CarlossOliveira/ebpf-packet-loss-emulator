@@ -1,4 +1,4 @@
-name: Catch Compile Errors
+name: Build
 
 on:
   push:
