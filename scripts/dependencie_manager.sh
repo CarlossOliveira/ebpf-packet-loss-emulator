@@ -47,11 +47,15 @@ install_libbpf()
 
 install_bpftool()
 {
-    rm -rf "$BPFTool_DIR"
-    git clone --depth=1 https://github.com/libbpf/bpftool.git "$BPFTool_DIR"
+    if command -v bpftool >/dev/null 2>&1; then
+        return 0
+    fi
 
-    make -C "$BPFTool_DIR/src"
-    sudo make -C "$BPFTool_DIR/src" install
+    rm -rf "$BPFTool_DIR"
+    git clone --depth=1 https://github.com/torvalds/linux.git "$BPFTool_DIR"
+
+    make -C "$BPFTool_DIR/tools/bpf/bpftool"
+    sudo make -C "$BPFTool_DIR/tools/bpf/bpftool" install
 }
 
 generate_vmlinux_h()
