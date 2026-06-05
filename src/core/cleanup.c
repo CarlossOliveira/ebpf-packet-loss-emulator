@@ -4,6 +4,7 @@
 #include "io_utils.h"
 
 #include <bpf/libbpf.h>
+#include <linux/bpf.h>
 #include <errno.h>
 #include <linux/if_link.h>
 #include <net/if.h>

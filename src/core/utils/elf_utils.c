@@ -11,7 +11,7 @@
 int open_elf_file(const char *filename)
 {
 	if (elf_version(EV_CURRENT) == EV_NONE) {
-#ifndef DEBUG
+#ifdef DEBUG
 		printf("elf_utils: Failed to initialize Elf library: %s\n",
 		       elf_errmsg(-1));
 #endif // !DEBUG
@@ -23,7 +23,7 @@ int open_elf_file(const char *filename)
 
 	int elf_fd = open(filename, O_RDONLY);
 	if (elf_fd < 0) {
-#ifndef DEBUG
+#ifdef DEBUG
 		printf("elf_utils: Failed to open Elf file: %s\n", filename);
 #endif // !DEBUG
 		return -1;
@@ -47,7 +47,7 @@ Elf *get_elf_handle(int elf_fd, Elf_Cmd cmd)
 
 	Elf *elf = elf_begin(elf_fd, cmd, NULL);
 	if (!elf) {
-#ifndef DEBUG
+#ifdef DEBUG
 		printf("elf_utils: Failed to get Elf handle: %s\n",
 		       elf_errmsg(-1));
 #endif // !DEBUG
@@ -62,7 +62,7 @@ int close_elf_handle(Elf *elf)
 		return -1;
 
 	if (elf_end(elf) != 0) {
-#ifndef DEBUG
+#ifdef DEBUG
 		printf("elf_utils: Failed to close Elf handle\n");
 #endif // !DEBUG
 		return -1;
@@ -79,7 +79,7 @@ static Elf_Scn *goto_elf_section(Elf *elf, const char *section_name)
 		return NULL;
 
 	if (elf_getshdrstrndx(elf, &shstrndx) != 0) {
-#ifndef DEBUG
+#ifdef DEBUG
 		printf("elf_utils: Failed to get section header string table "
 		       "index\n");
 #endif
@@ -90,7 +90,7 @@ static Elf_Scn *goto_elf_section(Elf *elf, const char *section_name)
 		GElf_Shdr shdr;
 
 		if (gelf_getshdr(scn, &shdr) != &shdr) {
-#ifndef DEBUG
+#ifdef DEBUG
 			printf("elf_utils: Failed to get section header\n");
 #endif
 			return NULL;
@@ -98,7 +98,7 @@ static Elf_Scn *goto_elf_section(Elf *elf, const char *section_name)
 
 		char *name = elf_strptr(elf, shstrndx, shdr.sh_name);
 		if (!name) {
-#ifndef DEBUG
+#ifdef DEBUG
 			printf("elf_utils: Failed to get section name\n");
 #endif
 			return NULL;
@@ -108,7 +108,7 @@ static Elf_Scn *goto_elf_section(Elf *elf, const char *section_name)
 			return scn;
 	}
 
-#ifndef DEBUG
+#ifdef DEBUG
 	printf("elf_utils: Section '%s' not found in Elf file\n", section_name);
 #endif
 	return NULL;
@@ -118,7 +118,7 @@ static Elf_Data *get_elf_section_data(Elf_Scn *scn)
 {
 	Elf_Data *data = elf_getdata(scn, NULL);
 	if (!data) {
-#ifndef DEBUG
+#ifdef DEBUG
 		printf("elf_utils: Failed to get section data\n");
 #endif // !DEBUG
 		return NULL;
