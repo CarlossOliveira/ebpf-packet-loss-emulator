@@ -55,5 +55,11 @@ jobs:
       - name: Install Project dependencies
         run: sudo chmod +x ./scripts/dependencie_manager.sh && ./scripts/dependencie_manager.sh install
 
+      - name: Debug libbpf
+        run: |
+          find /usr/local -name libbpf.pc
+          pkg-config --variable pc_path pkg-config
+          PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig pkg-config --modversion libbpf
+
       - name: Compile project
         run: make all
