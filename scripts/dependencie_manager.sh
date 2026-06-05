@@ -7,9 +7,14 @@ if [ "$(uname -s)" != "Linux" ]; then
     exit 1
 fi
 
-INCLUDE_DIR="../src/include"
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+
+INCLUDE_DIR="$PROJECT_ROOT/src/include"
 VMLINUX_H="$INCLUDE_DIR/vmlinux.h"
+
 LIBBPF_DIR="/tmp/libbpf"
+BPFTool_DIR="/tmp/bpftool"
 
 APT_DEPS="git clang llvm gcc make pkg-config libelf-dev zlib1g-dev libreadline-dev iproute2"
 YUM_DEPS="git clang llvm gcc make pkgconf-pkg-config elfutils-libelf-devel zlib-devel readline-devel iproute"
@@ -40,15 +45,18 @@ install_libbpf()
     sudo ldconfig
 }
 
+install_bpftool()
+{
+    rm -rf "$BPFTool_DIR"
+    git clone --depth=1 https://github.com/libbpf/bpftool.git "$BPFTool_DIR"
+
+    make -C "$BPFTool_DIR/src"
+    sudo make -C "$BPFTool_DIR/src" install
+}
+
 generate_vmlinux_h()
 {
     mkdir -p "$INCLUDE_DIR"
-
-    if ! command -v bpftool >/dev/null 2>&1; then
-        echo "bpftool not found."
-        echo "Install bpftool manually or add it to your distro dependencies."
-        exit 1
-    fi
 
     if [ ! -r /sys/kernel/btf/vmlinux ]; then
         echo "/sys/kernel/btf/vmlinux not found."
@@ -63,18 +71,20 @@ uninstall()
 {
     sudo rm -f /usr/local/lib/libbpf.*
     sudo rm -rf /usr/local/include/bpf
+    sudo rm -f /usr/local/sbin/bpftool /usr/local/bin/bpftool
     sudo ldconfig
 
     rm -f "$VMLINUX_H"
-    rm -rf "$LIBBPF_DIR"
+    rm -rf "$LIBBPF_DIR" "$BPFTool_DIR"
 
-    echo "Uninstalled generated vmlinux.h and locally installed libbpf."
+    echo "Uninstalled generated vmlinux.h, local libbpf and local bpftool."
 }
 
 case "$1" in
     install)
         install_deps
         install_libbpf
+        install_bpftool
         generate_vmlinux_h
         echo "Install complete."
         ;;
