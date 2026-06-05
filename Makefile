@@ -64,7 +64,10 @@ clean:
 	rm -rf $(OUTPUT_DIR)
 
 format:
-	@command find src   -type f \( -name "*.c" -o -name "*.h" \)   ! -name "vmlinux.h"   -exec clang-format -i {} \;
+format:
+	@find src -type f \( -name "*.c" -o -name "*.h" \) \
+		! -name "vmlinux.h" \
+		-exec clang-format -i {} \;
 	@echo "Code formatted successfully."
 
 .PHONY: all app bpf clean check_dependencies

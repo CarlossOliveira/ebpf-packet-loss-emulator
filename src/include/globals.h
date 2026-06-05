@@ -36,7 +36,7 @@ void signal_handler(int signum);
 
 int attach_bpf_program(struct bpf_object *obj, const char *interface);
 struct bpf_object *mount_bpf_module(const char *module_name,
-                                    const char *interface);
+				    const char *interface);
 
 // Cleanup
 int detach_bpf_program(struct bpf_object *obj, const char *interface);
@@ -59,27 +59,27 @@ int dump_stats(void);
 #define TC_ACT_SHOT 2
 
 struct {
-  __uint(type, BPF_MAP_TYPE_HASH);
-  __uint(max_entries, 3);
-  __type(key, __u8);
-  __type(value, __u64);
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 3);
+	__type(key, __u8);
+	__type(value, __u64);
 } stats_map SEC(".maps");
 
 struct {
-  __uint(type, BPF_MAP_TYPE_HASH);
-  __uint(max_entries, MAX_CONFIG_ENTRIES);
-  __type(key, char[CONFIG_KEY_SIZE]);
-  __type(value, __u64);
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, MAX_CONFIG_ENTRIES);
+	__type(key, char[CONFIG_KEY_SIZE]);
+	__type(value, __u64);
 } config_map SEC(".maps");
 
 typedef struct {
-  __u8 data[BPF_STATE_SIZE];
+	__u8 data[BPF_STATE_SIZE];
 } bpf_state_t;
 struct {
-  __uint(type, BPF_MAP_TYPE_HASH);
-  __uint(max_entries, 1);
-  __type(key, char[CONFIG_KEY_SIZE]);
-  __type(value, bpf_state_t);
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 1);
+	__type(key, char[CONFIG_KEY_SIZE]);
+	__type(value, bpf_state_t);
 } bpf_module_memory SEC(".maps");
 
 #endif // !BPF

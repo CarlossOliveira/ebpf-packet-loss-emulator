@@ -10,6 +10,6 @@ int close_elf_handle(Elf *elf);
 int close_elf_file(int elf_fd);
 bool elf_has_section(int elf_fd, const char *section_name);
 void *read_elf_section(const char *filename, const char *section_name,
-                       size_t *size);
+		       size_t *size);
 
 #endif // !ELF_UTILS_H
