@@ -30,8 +30,8 @@ BPF_OBJS := $(patsubst $(BPF_MODULES_DIR)/%.bpf.c,$(BPF_OBJ_DIR)/%.bpf.o,$(BPF_S
 PKG_CONFIG_PATH := /usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:$(PKG_CONFIG_PATH)
 export PKG_CONFIG_PATH
 
-LIBBPF_CFLAGS := $(shell PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)" pkg-config --cflags libbpf 2>/dev/null)
-LIBBPF_LIBS := $(shell PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)" pkg-config --libs libbpf 2>/dev/null)
+LIBBPF_CFLAGS := $(shell PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig pkg-config --cflags libbpf 2>/dev/null)
+LIBBPF_LIBS := $(shell PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig pkg-config --libs libbpf 2>/dev/null)
 
 CFLAGS := -Wall -Wextra -Wno-unknown-pragmas \
           -I$(INCLUDE_DIR) \
