@@ -7,6 +7,7 @@
 
 #include <bpf/bpf.h>
 #include <errno.h>
+#include <linux/if_link.h>
 #include <net/if.h>
 #include <stdatomic.h>
 #include <stdio.h>
@@ -46,21 +47,36 @@ int main(int argc, char *argv[]) {
   interface = argv[1];
 
   if (argc == 3) {
+    attach_point = 0;
     lower(argv[2]);
-    if (strcmp(argv[2], "egress") == 0)
-      attach_point = BPF_TC_EGRESS;
-    else if (strcmp(argv[2], "ingress") == 0)
-      attach_point = BPF_TC_INGRESS;
-    else if ((strcmp(argv[2], "ingress|egress") == 0) ||
-             (strcmp(argv[2], "egress|ingress") == 0))
-      attach_point = BPF_TC_INGRESS | BPF_TC_EGRESS;
-    else {
-      print(ERROR,
-            "Invalid attach point: %s. Use 'ingress', 'egress', or "
-            "'ingress|egress'.",
-            argv[2]);
+    char **args = strsplit(argv[2], '|');
+    if (!args) {
+      print(ERROR, "Failed to split attach point");
       return 1;
     }
+    for (int i = 0; args[i]; i++) {
+      if (strcmp(args[i], "ingress") == 0 ||
+          strcmp(args[i], "BPF_TC_INGRESS") == 0)
+        attach_point |= BPF_TC_INGRESS;
+      else if (strcmp(args[i], "egress") == 0 ||
+               strcmp(args[i], "BPF_TC_EGRESS") == 0)
+        attach_point |= BPF_TC_EGRESS;
+      else if (strcmp(args[i], "offload") == 0 ||
+               strcmp(args[i], "XDP_FLAGS_HW_MODE") == 0)
+        attach_point |= XDP_FLAGS_HW_MODE;
+      else if (strcmp(args[i], "driver") == 0 ||
+               strcmp(args[i], "XDP_FLAGS_DRV_MODE") == 0)
+        attach_point |= XDP_FLAGS_DRV_MODE;
+      else if (strcmp(args[i], "generic") == 0 ||
+               strcmp(args[i], "XDP_FLAGS_SKB_MODE") == 0)
+        attach_point |= XDP_FLAGS_SKB_MODE;
+      else {
+        print(ERROR, "Invalid attach point: %s", args[i]);
+        strsplit_free(args);
+        return 1;
+      }
+    }
+    strsplit_free(args);
   }
 
   if (setup() != 0)
@@ -88,17 +104,17 @@ int main(int argc, char *argv[]) {
     snprintf(bpf_module_name, sizeof(bpf_module_name), "%s", choice);
     bpf_module_name[sizeof(bpf_module_name) - 1] = '\0';
 
-    bpf_loaded_program_obj = mount_bpf_module(choice, interface);
+    bpf_loaded_program_obj = mount_bpf_module(bpf_module_name, interface);
     if (bpf_loaded_program_obj == NULL) {
-      print(ERROR, "Failed to attach module: %s", choice);
+      print(ERROR, "Failed to attach module: %s", bpf_module_name);
       continue;
     }
-    print(SUCCESS, "Module '%s' attached successfully", choice);
+    print(SUCCESS, "Module '%s' attached successfully", bpf_module_name);
 
     // Load config keys from the eBPF object section
     char bpf_elf_filename[512];
     snprintf(bpf_elf_filename, sizeof(bpf_elf_filename), "%s/%s.bpf.o",
-             BPF_OBJECT_DIR, choice);
+             BPF_OBJECT_DIR, bpf_module_name);
     size_t size;
     char *bpf_params =
         read_elf_section(bpf_elf_filename, ".config_keys", &size);

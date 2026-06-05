@@ -1,8 +1,11 @@
 #include "globals.h"
 
+#include "elf_utils.h"
 #include "io_utils.h"
 
+#include <bpf/libbpf.h>
 #include <errno.h>
+#include <linux/if_link.h>
 #include <net/if.h>
 #include <readline/readline.h>
 #include <signal.h>
@@ -23,10 +26,22 @@ int setup(void) {
   }
 
   if (pid == 0) {
-    char *args[] = {"make", "bpf", "-f", "../Makefile", NULL};
-    execv("/usr/bin/make", args);
+    char *args[] = {"make", "-C", PROJECT_ROOT, "bpf", NULL};
+    execvp("make", args);
+    print(ERROR, "Failed to execute make");
+    _exit(127);
   }
-  waitpid(pid, NULL, 0);
+
+  int status = 0;
+  if (waitpid(pid, &status, 0) < 0) {
+    print(ERROR, "Failed to wait for BPF build process");
+    return 1;
+  }
+
+  if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+    print(ERROR, "Failed to compile eBPF modules");
+    return 1;
+  }
 
   return 0;
 }
@@ -79,59 +94,89 @@ int attach_bpf_program(struct bpf_object *obj, const char *interface_name) {
     return -1;
   }
 
-  int points[2];
-  int n = 0;
-
-  if (attach_point & BPF_TC_INGRESS)
-    points[n++] = BPF_TC_INGRESS;
-
-  if (attach_point & BPF_TC_EGRESS)
-    points[n++] = BPF_TC_EGRESS;
-
-  if (n == 0) {
-    print(ERROR, "No valid attach point specified");
+  // Determine program type by checking for known sections in the ELF file
+  char bpf_elf_filename[512];
+  snprintf(bpf_elf_filename, sizeof(bpf_elf_filename), "%s/%s.bpf.o",
+           BPF_OBJECT_DIR, bpf_module_name);
+  int elf_fd = open_elf_file(bpf_elf_filename);
+  if (elf_fd < 0) {
+    print(ERROR, "Failed to open eBPF object file for inspection: %s",
+          bpf_elf_filename);
     return -1;
   }
 
-  for (int i = 0; i < n; i++) {
-    struct bpf_tc_hook hook = {
-        .sz = sizeof(hook),
-        .ifindex = ifindex,
-        .attach_point = points[i],
-    };
+  bool module_is_tc = elf_has_section(elf_fd, "classifier");
+  bool module_is_xdp = elf_has_section(elf_fd, "xdp");
+  close_elf_file(elf_fd);
 
-    int err = bpf_tc_hook_create(&hook);
-    if (err && err != -EEXIST) {
-      print(ERROR, "Failed to create TC hook");
+  // Load the program fd
+  struct bpf_program *prog =
+      bpf_object__find_program_by_name(obj, "packet_handler");
+  if (!prog) {
+    print(ERROR, "Failed to find eBPF program 'packet_handler'");
+    return -1;
+  }
+
+  int prog_fd = bpf_program__fd(prog);
+  if (prog_fd < 0) {
+    print(ERROR, "Invalid eBPF program fd");
+    return -1;
+  }
+
+  // Attach based on program type
+  int n = 0;
+  if (module_is_tc) {
+    int points[2];
+
+    if (attach_point & BPF_TC_INGRESS)
+      points[n++] = BPF_TC_INGRESS;
+
+    if (attach_point & BPF_TC_EGRESS)
+      points[n++] = BPF_TC_EGRESS;
+
+    if (n == 0) {
+      print(ERROR, "No valid attach point specified for TC module");
       return -1;
     }
+    for (int i = 0; i < n; i++) {
+      struct bpf_tc_hook hook = {
+          .sz = sizeof(hook),
+          .ifindex = ifindex,
+          .attach_point = points[i],
+      };
 
-    struct bpf_program *prog =
-        bpf_object__find_program_by_name(obj, "packet_handler");
+      int err = bpf_tc_hook_create(&hook);
+      if (err && err != -EEXIST) {
+        print(ERROR, "Failed to create hook");
+        n--;
+        continue;
+      }
 
-    if (!prog) {
-      print(ERROR, "Failed to find eBPF program 'packet_handler'");
+      struct bpf_tc_opts opts = {
+          .sz = sizeof(opts),
+          .prog_fd = prog_fd,
+          .handle = 1,
+          .priority = 1,
+      };
+
+      err = bpf_tc_attach(&hook, &opts);
+      if (err) {
+        print(ERROR, "Failed to attach eBPF program");
+        n--;
+        continue;
+      }
+    }
+  } else if (module_is_xdp) {
+    int flags =
+        (attach_point & ~(BPF_TC_INGRESS | BPF_TC_EGRESS)); // Extract XDP flags
+    if (bpf_set_link_xdp_fd(ifindex, prog_fd, flags) < 0) {
+      print(ERROR, "Failed to attach XDP program");
       return -1;
     }
-
-    int prog_fd = bpf_program__fd(prog);
-    if (prog_fd < 0) {
-      print(ERROR, "Invalid eBPF program fd");
-      return -1;
-    }
-
-    struct bpf_tc_opts opts = {
-        .sz = sizeof(opts),
-        .prog_fd = prog_fd,
-        .handle = 1,
-        .priority = 1,
-    };
-
-    err = bpf_tc_attach(&hook, &opts);
-    if (err) {
-      print(ERROR, "Failed to attach eBPF program");
-      return -1;
-    }
+    n = 1;
+  } else {
+    print(ERROR, "Unknown eBPF program type");
+    return -1;
   }
 
   return n;
@@ -176,7 +221,7 @@ struct bpf_object *mount_bpf_module(const char *module_name,
     return NULL;
   }
 
-  if (attach_bpf_program(obj, interface_name) < 0) {
+  if (attach_bpf_program(obj, interface_name) <= 0) {
     print(ERROR, "Failed to attach eBPF program");
     bpf_object__close(obj);
     return NULL;

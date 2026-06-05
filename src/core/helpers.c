@@ -22,6 +22,7 @@ int input(char *prompt, char *buffer, size_t size) {
   if (!buffer || size == 0)
     return 1;
 
+  fflush(stdout); // Ensure prompt is printed before input
   char *line = readline(prompt ? prompt : "");
 
   if (!atomic_load(&active) || atomic_load(&bpf_module_change_requested)) {
@@ -29,8 +30,10 @@ int input(char *prompt, char *buffer, size_t size) {
     return 1;
   }
 
-  if (!line)
-    return -1;
+  if (!line) {
+    atomic_store(&active, false);
+    return 1;
+  }
 
   if (line[0] != '\0')
     add_history(line);

@@ -8,47 +8,71 @@
 #include <string.h>
 #include <unistd.h>
 
-Elf *open_elf_file(const char *filename, Elf_Cmd cmd) {
+int open_elf_file(const char *filename) {
   if (elf_version(EV_CURRENT) == EV_NONE) {
-#ifndef SILENT_ELF
+#ifndef DEBUG
     printf("elf_utils: Failed to initialize Elf library: %s\n", elf_errmsg(-1));
-#endif // !SILENT_ELF
-    return NULL;
+#endif // !DEBUG
+    return -1;
   }
   if (!filename) {
-    return NULL;
+    return -1;
   }
 
-  int fd = open(filename, O_RDONLY);
-  if (fd < 0) {
-#ifndef SILENT_ELF
+  int elf_fd = open(filename, O_RDONLY);
+  if (elf_fd < 0) {
+#ifndef DEBUG
     printf("elf_utils: Failed to open Elf file: %s\n", filename);
-#endif // !SILENT_ELF
-    return NULL;
+#endif // !DEBUG
+    return -1;
   }
 
-  return elf_begin(fd, cmd, NULL);
+  return elf_fd;
 }
 
-int close_elf_file(Elf *elf) {
+int close_elf_file(int elf_fd) {
+  if (elf_fd < 0)
+    return -1;
+
+  return close(elf_fd);
+}
+
+Elf *get_elf_handle(int elf_fd, Elf_Cmd cmd) {
+  if (elf_fd < 0)
+    return NULL;
+
+  Elf *elf = elf_begin(elf_fd, cmd, NULL);
+  if (!elf) {
+#ifndef DEBUG
+    printf("elf_utils: Failed to get Elf handle: %s\n", elf_errmsg(-1));
+#endif // !DEBUG
+    return NULL;
+  }
+  return elf;
+}
+
+int close_elf_handle(Elf *elf) {
   if (!elf)
     return -1;
 
-  int fd = elf_getbase(elf);
   if (elf_end(elf) != 0) {
-#ifndef SILENT_ELF
-    printf("elf_utils: Failed to close Elf file\n");
-#endif // !SILENT_ELF
+#ifndef DEBUG
+    printf("elf_utils: Failed to close Elf handle\n");
+#endif // !DEBUG
+    return -1;
   }
-  return close(fd);
+  return 0;
 }
 
-Elf_Scn *goto_elf_section(Elf *elf, const char *section_name) {
+static Elf_Scn *goto_elf_section(Elf *elf, const char *section_name) {
   Elf_Scn *scn = NULL;
   size_t shstrndx;
 
+  if (!elf || !section_name)
+    return NULL;
+
   if (elf_getshdrstrndx(elf, &shstrndx) != 0) {
-#ifndef SILENT_ELF
+#ifndef DEBUG
     printf("elf_utils: Failed to get section header string table index\n");
 #endif
     return NULL;
@@ -58,7 +82,7 @@ Elf_Scn *goto_elf_section(Elf *elf, const char *section_name) {
     GElf_Shdr shdr;
 
     if (gelf_getshdr(scn, &shdr) != &shdr) {
-#ifndef SILENT_ELF
+#ifndef DEBUG
       printf("elf_utils: Failed to get section header\n");
 #endif
       return NULL;
@@ -66,7 +90,7 @@ Elf_Scn *goto_elf_section(Elf *elf, const char *section_name) {
 
     char *name = elf_strptr(elf, shstrndx, shdr.sh_name);
     if (!name) {
-#ifndef SILENT_ELF
+#ifndef DEBUG
       printf("elf_utils: Failed to get section name\n");
 #endif
       return NULL;
@@ -76,44 +100,66 @@ Elf_Scn *goto_elf_section(Elf *elf, const char *section_name) {
       return scn;
   }
 
-#ifndef SILENT_ELF
+#ifndef DEBUG
   printf("elf_utils: Section '%s' not found in Elf file\n", section_name);
 #endif
   return NULL;
 }
 
-Elf_Data *get_elf_section_data(Elf_Scn *scn) {
+static Elf_Data *get_elf_section_data(Elf_Scn *scn) {
   Elf_Data *data = elf_getdata(scn, NULL);
   if (!data) {
-#ifndef SILENT_ELF
+#ifndef DEBUG
     printf("elf_utils: Failed to get section data\n");
-#endif // !SILENT_ELF
+#endif // !DEBUG
     return NULL;
   }
   return data;
 }
 
+bool elf_has_section(int elf_fd, const char *section_name) {
+  Elf *elf = get_elf_handle(elf_fd, ELF_C_READ);
+  if (!elf)
+    return false;
+
+  bool found = goto_elf_section(elf, section_name) != NULL;
+  close_elf_handle(elf);
+  return found;
+}
+
 void *read_elf_section(const char *filename, const char *section_name,
                        size_t *size) {
-  Elf *elf = open_elf_file(filename, ELF_C_READ);
-  if (!elf)
+  if (size)
+    *size = 0;
+
+  int elf_fd = open_elf_file(filename);
+  if (elf_fd < 0)
     return NULL;
+
+  Elf *elf = get_elf_handle(elf_fd, ELF_C_READ);
+  if (!elf) {
+    close_elf_file(elf_fd);
+    return NULL;
+  }
 
   Elf_Scn *scn = goto_elf_section(elf, section_name);
   if (!scn) {
-    elf_end(elf);
+    close_elf_handle(elf);
+    close_elf_file(elf_fd);
     return NULL;
   }
 
   Elf_Data *data = get_elf_section_data(scn);
   if (!data || !data->d_buf || data->d_size == 0) {
-    elf_end(elf);
+    close_elf_handle(elf);
+    close_elf_file(elf_fd);
     return NULL;
   }
 
   void *copy = malloc(data->d_size);
   if (!copy) {
-    elf_end(elf);
+    close_elf_handle(elf);
+    close_elf_file(elf_fd);
     return NULL;
   }
 
@@ -122,6 +168,7 @@ void *read_elf_section(const char *filename, const char *section_name,
   if (size)
     *size = data->d_size;
 
-  elf_end(elf);
+  close_elf_handle(elf);
+  close_elf_file(elf_fd);
   return copy;
 }
