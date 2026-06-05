@@ -3,7 +3,7 @@ BPF_CFLAGS := -O2 -g -Wall -Wextra -Wno-unknown-pragmas -target bpf
 
 CC := gcc
 
-PKG_CONFIG_PATH := /usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:$(PKG_CONFIG_PATH)
+PKG_CONFIG_PATH := /usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig
 
 LIBBPF_CFLAGS := $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --cflags libbpf 2>/dev/null)
 LIBBPF_LIBS := $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --libs libbpf 2>/dev/null)
