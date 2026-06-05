@@ -28,8 +28,8 @@ BPF_OBJS := $(patsubst $(BPF_MODULES_DIR)/%.bpf.c,$(BPF_OBJ_DIR)/%.bpf.o,$(BPF_S
 
 PKG_CONFIG_PATH := /usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig
 
-LIBBPF_CFLAGS := $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --cflags libbpf 2>/dev/null)
-LIBBPF_LIBS := $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --libs libbpf 2>/dev/null)
+LIBBPF_CFLAGS := $(shell pkg-config --cflags libbpf)
+LIBBPF_LIBS   := $(shell pkg-config --libs libbpf)
 
 CFLAGS := -Wall -Wextra -Wno-unknown-pragmas \
           -I$(INCLUDE_DIR) \
@@ -66,11 +66,13 @@ $(BPF_OBJ_DIR)/%.bpf.o: $(BPF_MODULES_DIR)/%.bpf.c
 	$(BPF_CC) $(BPF_CFLAGS) -DBPF $(DEFS) -c $< -o $@
 
 check:
+	@echo "Checking for required tools and libraries..."
 	@command -v clang >/dev/null || { echo "clang not found"; exit 1; }
 	@command -v gcc >/dev/null || { echo "gcc not found"; exit 1; }
 	@command -v tc >/dev/null || { echo "tc not found"; exit 1; }
-	@command -v pkg-config >/dev/null || { echo "pkg-config not found"; exit 1; }
+	@pkg-config --exists libbpf || { echo "libbpf not found" && exit 1; }
 	@PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --exists libbpf || { echo "libbpf not found"; exit 1; }
+	@echo "All required tools and libraries are available."
 
 clean:
 	rm -rf $(BUILD_DIR)
