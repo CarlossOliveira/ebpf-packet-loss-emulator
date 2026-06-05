@@ -11,6 +11,7 @@
 #include <readline/readline.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -31,7 +32,7 @@ int setup(void)
 		char *args[] = {"make", "-C", PROJECT_ROOT, "bpf", NULL};
 		execvp("make", args);
 		print(ERROR, "Failed to execute make");
-		_exit(127);
+		exit(0);
 	}
 
 	int status = 0;
@@ -180,7 +181,8 @@ int attach_bpf_program(struct bpf_object *obj, const char *interface_name)
 		int flags =
 		    (attach_point &
 		     ~(BPF_TC_INGRESS | BPF_TC_EGRESS)); // Extract XDP flags
-		if (bpf_set_link_xdp_fd(ifindex, prog_fd, flags) < 0) {
+		if (bpf_set_link_xdp_fd(ifindex, prog_fd, flags) <
+		    0) { // bpf_xdp_attach doesn't work, idk :/
 			print(ERROR, "Failed to attach XDP program");
 			return -1;
 		}

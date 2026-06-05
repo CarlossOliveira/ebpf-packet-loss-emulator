@@ -112,7 +112,8 @@ int detach_bpf_program(struct bpf_object *obj, const char *interface_name)
 		int flags =
 		    (attach_point &
 		     ~(BPF_TC_INGRESS | BPF_TC_EGRESS)); // Extract XDP flags
-		if (bpf_set_link_xdp_fd(ifindex, -1, flags) < 0) {
+		if (bpf_set_link_xdp_fd(ifindex, -1, flags) <
+		    0) { // bpf_xdp_detach doesn't work, idk :/
 			print(ERROR, "Failed to detach XDP program");
 			return -1;
 		}
