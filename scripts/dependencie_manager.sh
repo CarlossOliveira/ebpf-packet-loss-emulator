@@ -47,7 +47,7 @@ install_libbpf()
 
 install_bpftool()
 {
-    if command -v bpftool >/dev/null 2>&1; then
+    if [ -x /usr/local/sbin/bpftool ]; then
         return 0
     fi
 
@@ -67,10 +67,19 @@ generate_vmlinux_h()
         exit 1
     fi
 
-    bpftool btf dump file /sys/kernel/btf/vmlinux format c > "$VMLINUX_H"
+    BPFTool="/usr/local/sbin/bpftool"
+    if [ ! -x "$BPFTool" ]; then
+        BPFTool="$(command -v bpftool || true)"
+    fi
+
+    if [ -z "$BPFTool" ]; then
+        echo "bpftool not found."
+        exit 1
+    fi
+
+    "$BPFTool" btf dump file /sys/kernel/btf/vmlinux format c > "$VMLINUX_H"
     echo "Generated $VMLINUX_H"
 }
-
 uninstall()
 {
     sudo rm -f /usr/local/lib/libbpf.*
