@@ -60,11 +60,43 @@ install_deps() {
     fi
 }
 
+install_libbpf_from_packages() {
+    echo "[*] Trying libbpf package..."
+
+    if command -v apt-get >/dev/null 2>&1; then
+        if apt-cache show libbpf-dev >/dev/null 2>&1; then
+            apt_install libbpf-dev
+        else
+            return 1
+        fi
+    elif command -v yum >/dev/null 2>&1; then
+        if yum info libbpf-devel >/dev/null 2>&1; then
+            $SUDO yum install -y libbpf-devel
+        else
+            return 1
+        fi
+    elif command -v apk >/dev/null 2>&1; then
+        if ! $SUDO apk add libbpf-dev; then
+            return 1
+        fi
+    else
+        return 1
+    fi
+
+    PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --exists libbpf 2>/dev/null
+}
+
 install_libbpf() {
     PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
 
     if PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --exists libbpf 2>/dev/null; then
         echo "[*] libbpf already installed."
+        echo "[*] libbpf version: $(PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --modversion libbpf)"
+        return
+    fi
+
+    if install_libbpf_from_packages; then
+        echo "[+] libbpf installed from package."
         echo "[*] libbpf version: $(PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --modversion libbpf)"
         return
     fi
