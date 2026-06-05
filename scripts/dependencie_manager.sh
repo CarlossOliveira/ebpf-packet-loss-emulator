@@ -22,7 +22,36 @@ TMP_DIR=${TMPDIR:-/tmp}
 LIBBPF_DIR="$TMP_DIR/libbpf"
 LINUX_DIR="$TMP_DIR/linux-bpftool"
 
+ENV_DIR="/usr/local/share/ebpf-packet-loss-emulator"
+ENV_FILE="$ENV_DIR/env.sh"
+
 KERNEL_RELEASE=$(uname -r)
+
+load_env_now() {
+    export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+    export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
+    export LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:${LD_LIBRARY_PATH:-}"
+}
+
+write_env_file() {
+    echo "[*] Writing environment file..."
+
+    $SUDO mkdir -p "$ENV_DIR"
+
+    $SUDO sh -c "cat > '$ENV_FILE'" <<'EOF'
+export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
+export LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:${LD_LIBRARY_PATH:-}"
+EOF
+
+    echo "[+] Environment file written: $ENV_FILE"
+}
+
+remove_env_file() {
+    echo "[*] Removing environment file..."
+    $SUDO rm -rf "$ENV_DIR"
+    echo "[+] Environment file removed."
+}
 
 apt_install() {
     echo "[*] apt-get install: $*"
@@ -61,8 +90,11 @@ install_deps() {
 }
 
 install_libbpf() {
-    if pkg-config --exists libbpf 2>/dev/null; then
+    load_env_now
+
+    if PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --exists libbpf 2>/dev/null; then
         echo "[*] libbpf already installed."
+        echo "[*] libbpf version: $(PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --modversion libbpf)"
         return
     fi
 
@@ -86,7 +118,10 @@ install_libbpf() {
         $SUDO ldconfig
     fi
 
+    load_env_now
+
     echo "[+] libbpf installed."
+    echo "[*] libbpf version: $(PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --modversion libbpf 2>/dev/null || echo not-found)"
 }
 
 bpftool_works() {
@@ -158,6 +193,8 @@ install_bpftool_from_packages() {
 }
 
 install_bpftool() {
+    load_env_now
+
     if BPFTool=$(find_bpftool); then
         echo "[*] bpftool already working: $BPFTool"
         return
@@ -179,7 +216,10 @@ install_bpftool() {
         "$LINUX_DIR"
 
     make -C "$LINUX_DIR/tools/bpf/bpftool"
+
     $SUDO make -C "$LINUX_DIR/tools/bpf/bpftool" install
+
+    load_env_now
 
     if BPFTool=$(find_bpftool); then
         echo "[+] bpftool installed from source: $BPFTool"
@@ -231,6 +271,8 @@ uninstall() {
     $SUDO rm -f /usr/local/bin/bpftool
     $SUDO rm -f /usr/local/share/bash-completion/completions/bpftool
 
+    remove_env_file
+
     if command -v ldconfig >/dev/null 2>&1; then
         echo "[*] Running ldconfig..."
         $SUDO ldconfig
@@ -241,6 +283,8 @@ uninstall() {
 
 case "${1:-}" in
     install)
+        load_env_now
+        write_env_file
         install_deps
         install_libbpf
         install_bpftool
@@ -248,6 +292,10 @@ case "${1:-}" in
 
         echo
         echo "[+] Installation complete."
+        echo "[*] Environment file:"
+        echo "    $ENV_FILE"
+        echo "[*] To use these paths in a new shell/script, run:"
+        echo "    . $ENV_FILE"
         ;;
     uninstall)
         uninstall
