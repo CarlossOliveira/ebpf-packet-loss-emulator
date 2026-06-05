@@ -181,8 +181,7 @@ int attach_bpf_program(struct bpf_object *obj, const char *interface_name)
 		int flags =
 		    (attach_point &
 		     ~(BPF_TC_INGRESS | BPF_TC_EGRESS)); // Extract XDP flags
-		if (bpf_set_link_xdp_fd(ifindex, prog_fd, flags) <
-		    0) { // bpf_xdp_attach doesn't work, idk :/
+		if (bpf_xdp_attach(ifindex, prog_fd, flags, NULL) < 0) {
 			print(ERROR, "Failed to attach XDP program");
 			return -1;
 		}
