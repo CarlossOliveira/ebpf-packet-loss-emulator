@@ -59,9 +59,10 @@ $(BIN): $(APP_SRCS)
 	@echo "Building application..."
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -DAPP $(DEFS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
+	@echo "Application compiled successfully."
 
 bpf: $(BPF_OBJS)
-	@echo "BPF modules compiled successfully."
+	@echo "All BPF modules compiled successfully."
 
 $(BPF_OBJ_DIR)/%.bpf.o: $(BPF_MOD)/%.bpf.c
 	@echo "Compiling BPF module: $<"
@@ -80,7 +81,7 @@ install uninstall:
 	@echo "$@ing dependencies..."
 	@chmod +x $(DEPS_SCRIPT)
 	$(DEPS_SCRIPT) $@
-	@echo "Dependencies $@ed successfully."
+	@echo "All dependencies $@ed successfully."
 
 clean:
 	rm -rf $(BUILD)
@@ -89,6 +90,6 @@ format:
 	@echo "Formatting code..."
 	@command -v clang-format >/dev/null || { echo "clang-format not found"; exit 1; }
 	@find src -type f \( -name "*.c" -o -name "*.h" \) ! -name "vmlinux.h" -exec clang-format -i {} \;
-	@echo "Code formatted."
+	@echo "Code formatted successfully."
 
 .PHONY: all app bpf check install uninstall clean format
