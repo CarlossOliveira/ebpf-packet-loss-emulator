@@ -16,6 +16,7 @@
 #define RESET "\033[0m"
 
 void print(const char *code, const char *msg, ...);
+
 void wait_for_char(char expected_char, atomic_bool *active);
 
 #endif // !IO_UTILS_H
