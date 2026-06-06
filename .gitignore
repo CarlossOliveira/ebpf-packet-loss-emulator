@@ -8,7 +8,7 @@
 *.out
 *.app
 
-# Output directorie
+# Output directories
 build/
 
 # Logs
@@ -20,3 +20,6 @@ logs/
 
 # Compile commands
 compile_commands.json
+
+# BPF generated headers
+vmlinux.h

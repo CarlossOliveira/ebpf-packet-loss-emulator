@@ -38,21 +38,21 @@ install_deps() {
 
         apt_install \
             git clang llvm gcc make pkg-config \
-            libelf-dev zlib1g-dev libreadline-dev iproute2
+            libelf-dev zlib1g-dev libreadline-dev iproute2 clang-format
 
     elif command -v yum >/dev/null 2>&1; then
         echo "[*] Detected yum-based system"
 
         $SUDO yum install -y \
             git clang llvm gcc make pkgconf-pkg-config \
-            elfutils-libelf-devel zlib-devel readline-devel iproute
+            elfutils-libelf-devel zlib-devel readline-devel iproute clang-format
 
     elif command -v apk >/dev/null 2>&1; then
         echo "[*] Detected Alpine system"
 
         $SUDO apk add \
             git clang llvm gcc make pkgconf \
-            elfutils-dev zlib-dev readline-dev iproute2 musl-dev
+            elfutils-dev zlib-dev readline-dev iproute2 musl-dev clang-format
 
     else
         echo "[!] Unsupported distribution."
