@@ -22,6 +22,8 @@
 #define CLEAR_SCREEN_COMMAND "clear"
 #define EXIT_COMMAND "exit"
 
+#define DEBUG
+
 static void parse_command(char *input);
 
 int main(int argc, char *argv[])
