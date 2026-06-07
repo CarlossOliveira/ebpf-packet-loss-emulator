@@ -1,4 +1,4 @@
-<img src="docs/images/ebpf-packet-loss-emulator.jpg" alt="Packet Loss Emulator">
+<img src="docs/resources/ebpf-packet-loss-emulator.jpg" alt="Packet Loss Emulator">
 
 # eBPF Packet Loss Emulator
 
@@ -19,7 +19,6 @@
     - [Ingress Data Path](#ingress-data-path)
     - [XDP Attachment Points](#xdp-attachment-points)
     - [Traffic Control Attachment Points](#traffic-control-attachment-points)
-  
 - [Implementation](#implementation)
   - [Core Components](#core-components)
   - [eBPF Modules](#ebpf-modules)
@@ -342,18 +341,18 @@ The framework supports both eXpress Data Path (XDP) and Traffic Control (TC) att
 
 The following symbols are used throughout the networking stack diagrams to represent the various hardware and software components involved in packet processing.
 
-| Symbol                                                                        | Component                          | Description                                                                                             |
-| ----------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| <img src="docs/images/linux.png" alt="Linux Kernel" width="40">               | Linux Kernel                       | Components and subsystems executing within kernel space.                                                |
-| <img src="docs/images/user.png" alt="User Space" width="40">                  | User Space                         | User applications and processes interacting with the networking stack.                                  |
-| <img src="docs/images/RAM.png" alt="System Memory" width="40">                | System Memory (RAM)                | Main memory used to store packet buffers, SKBs, descriptors, and runtime data structures.               |
-| <img src="docs/images/CPU.png" alt="CPU" width="40">                          | CPU                                | Processing units responsible for executing networking and application workloads.                        |
-| <img src="docs/images/NIC.png" alt="Network Interface Controller" width="40"> | Network Interface Controller (NIC) | Hardware device responsible for transmitting and receiving network traffic.                             |
-| <img src="docs/images/driver.png" alt="Network Driver" width="40">            | Network Driver                     | Software component providing the interface between the Linux networking subsystem and the NIC hardware. |
+| Symbol                                                                           | Component                          | Description                                                                                             |
+| -------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| <img src="docs/resources/linux.png" alt="Linux Kernel" width="40">               | Linux Kernel                       | Components and subsystems executing within kernel space.                                                |
+| <img src="docs/resources/user.png" alt="User Space" width="40">                  | User Space                         | User applications and processes interacting with the networking stack.                                  |
+| <img src="docs/resources/RAM.png" alt="System Memory" width="40">                | System Memory (RAM)                | Main memory used to store packet buffers, SKBs, descriptors, and runtime data structures.               |
+| <img src="docs/resources/CPU.png" alt="CPU" width="40">                          | CPU                                | Processing units responsible for executing networking and application workloads.                        |
+| <img src="docs/resources/NIC.png" alt="Network Interface Controller" width="40"> | Network Interface Controller (NIC) | Hardware device responsible for transmitting and receiving network traffic.                             |
+| <img src="docs/resources/driver.png" alt="Network Driver" width="40">            | Network Driver                     | Software component providing the interface between the Linux networking subsystem and the NIC hardware. |
 
 ### **Egress Data Path**
 
-![Linux Networking Stack - Egress Path](docs/images/egress_data_path.jpg)
+![Linux Networking Stack - Egress Path](docs/resources/egress_data_path.jpg)
 
 The egress path describes the sequence of operations performed when an application transmits data through a network interface.
 
@@ -401,7 +400,7 @@ By bypassing intermediate copy operations, DMA significantly reduces packet tran
 
 ### **Ingress Data Path**
 
-![Linux Networking Stack - Ingress Path](docs/images/ingress_data_path.jpg)
+![Linux Networking Stack - Ingress Path](docs/resources/ingress_data_path.jpg)
 
 The ingress path describes the sequence of operations performed when packets arrive from the network and are delivered to applications.
 
