@@ -340,14 +340,14 @@ The following legend is used throughout the networking stack diagrams.
 
 The following symbols are used throughout the networking stack diagrams to represent the various hardware and software components involved in packet processing.
 
-| Symbol                                        | Component                          | Description                                                                                             |
-| --------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| <img src="docs/images/linux.png" width="40">  | Linux Kernel                       | Components and subsystems executing within kernel space.                                                |
-| <img src="docs/images/user.png" width="40">   | User Space                         | User applications and processes interacting with the networking stack.                                  |
-| <img src="docs/images/RAM.png" width="40">    | System Memory (RAM)                | Main memory used to store packet buffers, SKBs, descriptors, and runtime data structures.               |
-| <img src="docs/images/CPU.png" width="40">    | CPU                                | Processing units responsible for executing networking and application workloads.                        |
-| <img src="docs/images/NIC.png" width="40">    | Network Interface Controller (NIC) | Hardware device responsible for transmitting and receiving network traffic.                             |
-| <img src="docs/images/driver.png" width="40"> | Network Driver                     | Software component providing the interface between the Linux networking subsystem and the NIC hardware. |
+| Symbol                                                                        | Component                          | Description                                                                                             |
+| ----------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| <img src="docs/images/linux.png" alt="Linux Kernel" width="40">               | Linux Kernel                       | Components and subsystems executing within kernel space.                                                |
+| <img src="docs/images/user.png" alt="User Space" width="40">                  | User Space                         | User applications and processes interacting with the networking stack.                                  |
+| <img src="docs/images/RAM.png" alt="System Memory" width="40">                | System Memory (RAM)                | Main memory used to store packet buffers, SKBs, descriptors, and runtime data structures.               |
+| <img src="docs/images/CPU.png" alt="CPU" width="40">                          | CPU                                | Processing units responsible for executing networking and application workloads.                        |
+| <img src="docs/images/NIC.png" alt="Network Interface Controller" width="40"> | Network Interface Controller (NIC) | Hardware device responsible for transmitting and receiving network traffic.                             |
+| <img src="docs/images/driver.png" alt="Network Driver" width="40">            | Network Driver                     | Software component providing the interface between the Linux networking subsystem and the NIC hardware. |
 
 #### **Egress Data Path**
 
