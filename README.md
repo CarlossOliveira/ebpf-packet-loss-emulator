@@ -65,7 +65,7 @@ sudo ./scripts/install_dependencies.sh install
 OR
 
 ```bash
-sudo make install-dependencies
+sudo make install
 ```
 
 ### 4. Remove Dependencies
