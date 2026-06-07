@@ -87,7 +87,8 @@ sudo make uninstall
 
 The installation script automatically installs the toolchain and libraries required for eBPF development, compilation, loading, and execution.
 
-**NOTE:** It's important to notice that eBPF development requires a compatible Linux Kernel and due to its reliance on specific kernel features, it may not be supported on all distributions or versions. Ensure that your system meets the necessary requirements for eBPF development before proceeding with installation.
+> [!Warning]
+>  It's important to notice that eBPF development requires a compatible Linux Kernel and due to its reliance on specific kernel features, it may not be supported on all distributions or versions. Ensure that your system meets the necessary requirements for eBPF development before proceeding with installation.
 
 ---
 
@@ -124,9 +125,14 @@ Example:
 sudo ./packet_loss_emulator eth0 'egress|ingress|driver'
 ```
 
-**NOTE:** The `offload` flag requires compatible hardware and may not be supported on all systems.
-**NOTE:** If no flags are provided, the default attachment points are TC Ingress and XDP Generic.
-**NOTE:** You can only select one XDP execution mode at a time, but you can combine XDP with TC to compare different attachment points.
+> [!NOTE]
+>  If no flags are provided, the default attachment points are TC Ingress and XDP Generic.
+
+> [!Warning]
+>  The `offload` flag requires compatible hardware and may not be supported on all systems.
+
+> [!Warning]
+> You can only select one XDP execution mode at a time, but you can combine XDP with TC to compare different attachment points.
 
 ## Runtime Module Selection
 
