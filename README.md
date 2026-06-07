@@ -62,10 +62,22 @@ cd ebpf-packet-loss-emulator
 sudo ./scripts/install_dependencies.sh install
 ```
 
+OR
+
+```bash
+sudo make install-dependencies
+```
+
 ### 4. Remove Dependencies
 
 ```bash
 sudo ./scripts/install_dependencies.sh uninstall
+```
+
+OR
+
+```bash
+sudo make uninstall
 ```
 
 The installation script automatically installs the toolchain and libraries required for eBPF development, compilation, loading, and execution.
