@@ -337,7 +337,7 @@ The following symbols are used throughout the networking stack diagrams to repre
 | <img src="docs/images/NIC.png" width="40">    | Network Interface Controller (NIC) | Hardware device responsible for transmitting and receiving network traffic.                             |
 | <img src="docs/images/driver.png" width="40"> | Network Driver                     | Software component providing the interface between the Linux networking subsystem and the NIC hardware. |
 
-#### Egress Data Path
+#### **Egress Data Path**
 
 ![Linux Networking Stack - Egress Path](docs/images/egress_data_path.jpg)
 
@@ -361,13 +361,13 @@ Within this path, the TC egress attachment point is located immediately before t
 
 This execution context makes TC egress particularly suitable for traffic shaping, filtering, scheduling, and packet loss emulation scenarios where access to higher-layer protocol information is required.
 
-##### Socket Buffers (SKBs)
+#### Socket Buffers (SKBs)
 
 The Socket Buffer (`sk_buff`) is the fundamental packet representation used by the Linux networking subsystem. It stores packet payloads, protocol headers, routing metadata, timestamps, and various internal networking structures.
 
 Many kernel networking subsystems, including Traffic Control, Netfilter, and routing components, operate directly on SKB structures.
 
-##### Segmentation Offloading
+#### Segmentation Offloading
 
 Modern Linux systems employ several offloading mechanisms to reduce CPU overhead during packet transmission.
 
@@ -377,7 +377,7 @@ Modern Linux systems employ several offloading mechanisms to reduce CPU overhead
 
 These optimisations reduce CPU utilisation and improve transmission throughput, particularly under high traffic loads.
 
-##### Direct Memory Access (DMA)
+#### Direct Memory Access (DMA)
 
 Direct Memory Access enables network interface controllers to access packet buffers directly from system memory without continuous CPU intervention.
 
@@ -385,7 +385,7 @@ By bypassing intermediate copy operations, DMA significantly reduces packet tran
 
 ---
 
-#### Ingress Data Path
+#### **Ingress Data Path**
 
 ![Linux Networking Stack - Ingress Path](docs/images/ingress_data_path.jpg)
 
@@ -411,7 +411,7 @@ Unlike the egress path, the ingress path provides multiple locations where packe
 
 ---
 
-##### NAPI and Interrupt Mitigation
+#### NAPI and Interrupt Mitigation
 
 Modern Linux network drivers utilise the New API (NAPI) framework to improve packet reception efficiency.
 
@@ -419,7 +419,7 @@ Instead of generating an interrupt for every received packet, NAPI combines inte
 
 This approach significantly reduces interrupt overhead and improves scalability under high packet rates.
 
-##### Generic Receive Offload (GRO)
+#### Generic Receive Offload (GRO)
 
 Generic Receive Offload performs the inverse operation of GSO.
 
