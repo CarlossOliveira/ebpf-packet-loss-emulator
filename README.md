@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/CarlossOliveira/ebpf-packet-loss-emulator/actions/workflows/CI.yml/badge.svg)](https://github.com/CarlossOliveira/ebpf-packet-loss-emulator/actions/workflows/CI.yml)
 
-## Table of Contents
+# Table of Contents
 
 - [Project Overview](#project-overview)
 - [Installation](#installation)
@@ -15,10 +15,16 @@
   - [Why eBPF?](#why-ebpf)
   - [ELF Format and Program Loading](#elf-format-and-program-loading)
   - [Linux Networking Stack and Attachment Points](#linux-networking-stack-and-attachment-points)
-
+    - [Egress Data Path](#egress-data-path)
+    - [Ingress Data Path](#ingress-data-path)
+    - [XDP Attachment Points](#xdp-attachment-points)
+    - [Traffic Control Attachment Points](#traffic-control-attachment-points)
+  
 - [Implementation](#implementation)
   - [Core Components](#core-components)
   - [eBPF Modules](#ebpf-modules)
+    - [tc_bernoulli.bpf.c](#xdp_bernoullibpfc)
+    - [xdp_bernoulli.bpf.c](#xdp_bernoullibpfc)
   - [Hook Points](#hook-points)
   - [Extensibility](#extensibility)
 
@@ -28,7 +34,7 @@
 
 ---
 
-## Project Overview
+# Project Overview
 
 **bpf-packet-loss-emulator** is an extensible network impairment framework built upon the Extended Berkeley Packet Filter (eBPF) technology. The project has been developed to emulate packet loss under controlled and configurable conditions, enabling the evaluation, validation, and performance analysis of applications and network protocols operating in adverse communication environments.
 
@@ -42,21 +48,21 @@ Beyond packet loss emulation, the framework has been designed with extensibility
 
 ---
 
-## Installation
+# Installation
 
-### 1. Clone the Repository
+## 1. Clone the Repository
 
 ```bash
 git clone https://github.com/CarlossOliveira/ebpf-packet-loss-emulator.git
 ```
 
-### 2. Navigate to the Project Directory
+## 2. Navigate to the Project Directory
 
 ```bash
 cd ebpf-packet-loss-emulator
 ```
 
-### 3. Install Dependencies
+## 3. Install Dependencies
 
 ```bash
 sudo ./scripts/install_dependencies.sh install
@@ -86,7 +92,7 @@ The installation script automatically installs the toolchain and libraries requi
 
 ---
 
-## Usage
+# Usage
 
 The framework exposes an interactive command-line interface (CLI) that allows users to load eBPF modules, modify runtime parameters, inspect execution statistics, and dynamically switch between packet loss implementations.
 
@@ -101,7 +107,7 @@ where:
 - `<network_interface>` specifies the target network interface;
 - `[flags]` determines the attachment mechanism and execution context used by the eBPF program.
 
-### Available Flags
+## Available Flags
 
 | Flag                             | Description                                                    |
 | -------------------------------- | -------------------------------------------------------------- |
@@ -123,7 +129,7 @@ sudo ./packet_loss_emulator eth0 'egress|ingress|driver'
 **NOTE:** If no flags are provided, the default attachment points are TC Ingress and XDP Generic.
 **NOTE:** You can only select one XDP execution mode at a time, but you can combine XDP with TC to compare different attachment points.
 
-### Runtime Module Selection
+## Runtime Module Selection
 
 Upon startup, the loader scans the available eBPF modules and presents them to the user for selection.
 
@@ -149,7 +155,7 @@ After a module is selected, the loader performs the following operations:
 
 The selected module immediately begins processing packets according to its internal logic and configuration state.
 
-### Interactive CLI
+## Interactive CLI
 
 Once loaded, the framework exposes a runtime management interface:
 
@@ -176,7 +182,7 @@ The framework additionally supports signal-based control:
 
 ---
 
-## Project Structure
+# Project Structure
 
 ```text
 ebpf-packet-loss-emulator
@@ -231,13 +237,13 @@ The project is organised into several directories that separate core functionali
 
 ---
 
-## Project Context
+# Project Context
 
 Understanding the design decisions behind the framework requires familiarity with several core technologies and concepts that underpin modern Linux packet processing. This section introduces the fundamental concepts required to understand the implementation presented throughout the remainder of this document.
 
 ---
 
-### What is eBPF?
+## What is eBPF?
 
 Extended Berkeley Packet Filter (eBPF) is a programmable execution environment embedded within the Linux kernel that enables the safe execution of user-defined code without requiring custom kernel modules.
 
@@ -268,23 +274,23 @@ Because eBPF programs execute directly within the kernel execution path, they ca
 
 ---
 
-### Why eBPF?
+## Why eBPF?
 
 The decision to employ eBPF as the foundation of the packet loss emulator was motivated by several architectural and performance-related advantages.
 
-#### Performance
+### Performance
 
 eBPF programs execute directly within the packet processing path, eliminating the need for expensive user-space context switches.
 
 Furthermore, certain execution modes, such as XDP Hardware Offload, allow packet processing logic to be executed directly on compatible Network Interface Controllers (NICs), reducing CPU utilisation and latency even further.
 
-#### Flexibility
+### Flexibility
 
 eBPF programs can be loaded, unloaded, and replaced dynamically at runtime.
 
 This capability allows packet impairment models to be modified without requiring kernel recompilation, application restarts, or system reboots, making eBPF particularly suitable for experimentation and testing environments.
 
-#### Safety
+### Safety
 
 All programs must pass kernel verification before execution.
 
@@ -292,7 +298,7 @@ The verifier guarantees that deployed programs cannot perform unsafe memory oper
 
 This provides a level of safety traditionally unavailable when extending kernel functionality.
 
-#### Observability
+### Observability
 
 eBPF provides direct access to kernel-level telemetry and execution statistics.
 
@@ -300,7 +306,7 @@ This capability enables the collection of detailed runtime metrics and packet pr
 
 ---
 
-### ELF Format and Program Loading
+## ELF Format and Program Loading
 
 eBPF programs are commonly compiled into ELF (Executable and Linkable Format) object files.
 
@@ -324,7 +330,7 @@ As a consequence, new eBPF modules can be developed independently from the loade
 
 ---
 
-### Linux Networking Stack and Attachment Points
+## Linux Networking Stack and Attachment Points
 
 The performance characteristics, packet visibility, and execution context available to an eBPF program are largely determined by the location at which it is attached within the Linux networking subsystem. Consequently, understanding the packet traversal path through the networking stack is essential when evaluating the behaviour of packet processing applications and network impairment mechanisms.
 
@@ -332,11 +338,7 @@ The Linux networking architecture consists of a combination of hardware and soft
 
 The framework supports both eXpress Data Path (XDP) and Traffic Control (TC) attachment mechanisms, enabling packet loss emulation at multiple stages of packet processing. Each attachment point provides a distinct trade-off between execution performance, available packet context, and hardware compatibility.
 
-#### Legend
-
-The following legend is used throughout the networking stack diagrams.
-
-#### Legend
+### Legend
 
 The following symbols are used throughout the networking stack diagrams to represent the various hardware and software components involved in packet processing.
 
@@ -349,7 +351,7 @@ The following symbols are used throughout the networking stack diagrams to repre
 | <img src="docs/images/NIC.png" alt="Network Interface Controller" width="40"> | Network Interface Controller (NIC) | Hardware device responsible for transmitting and receiving network traffic.                             |
 | <img src="docs/images/driver.png" alt="Network Driver" width="40">            | Network Driver                     | Software component providing the interface between the Linux networking subsystem and the NIC hardware. |
 
-#### **Egress Data Path**
+### **Egress Data Path**
 
 ![Linux Networking Stack - Egress Path](docs/images/egress_data_path.jpg)
 
@@ -373,13 +375,13 @@ Within this path, the TC egress attachment point is located immediately before t
 
 This execution context makes TC egress particularly suitable for traffic shaping, filtering, scheduling, and packet loss emulation scenarios where access to higher-layer protocol information is required.
 
-#### Socket Buffers (SKBs)
+### Socket Buffers (SKBs)
 
 The Socket Buffer (`sk_buff`) is the fundamental packet representation used by the Linux networking subsystem. It stores packet payloads, protocol headers, routing metadata, timestamps, and various internal networking structures.
 
 Many kernel networking subsystems, including Traffic Control, Netfilter, and routing components, operate directly on SKB structures.
 
-#### Segmentation Offloading
+### Segmentation Offloading
 
 Modern Linux systems employ several offloading mechanisms to reduce CPU overhead during packet transmission.
 
@@ -389,7 +391,7 @@ Modern Linux systems employ several offloading mechanisms to reduce CPU overhead
 
 These optimisations reduce CPU utilisation and improve transmission throughput, particularly under high traffic loads.
 
-#### Direct Memory Access (DMA)
+### Direct Memory Access (DMA)
 
 Direct Memory Access enables network interface controllers to access packet buffers directly from system memory without continuous CPU intervention.
 
@@ -397,7 +399,7 @@ By bypassing intermediate copy operations, DMA significantly reduces packet tran
 
 ---
 
-#### **Ingress Data Path**
+### **Ingress Data Path**
 
 ![Linux Networking Stack - Ingress Path](docs/images/ingress_data_path.jpg)
 
@@ -423,7 +425,7 @@ Unlike the egress path, the ingress path provides multiple locations where packe
 
 ---
 
-#### NAPI and Interrupt Mitigation
+### NAPI and Interrupt Mitigation
 
 Modern Linux network drivers utilise the New API (NAPI) framework to improve packet reception efficiency.
 
@@ -431,7 +433,7 @@ Instead of generating an interrupt for every received packet, NAPI combines inte
 
 This approach significantly reduces interrupt overhead and improves scalability under high packet rates.
 
-#### Generic Receive Offload (GRO)
+### Generic Receive Offload (GRO)
 
 Generic Receive Offload performs the inverse operation of GSO.
 
@@ -441,7 +443,7 @@ This reduces per-packet overhead and improves overall receive-side performance.
 
 ---
 
-#### XDP Attachment Points
+### XDP Attachment Points
 
 eXpress Data Path (XDP) is a high-performance packet processing framework designed to execute eBPF programs as early as possible in the packet reception path.
 
@@ -449,13 +451,13 @@ By executing before most of the networking stack is traversed, XDP minimises pac
 
 The framework supports all three XDP execution modes.
 
-##### XDP Generic Mode
+#### XDP Generic Mode
 
 XDP Generic mode executes after SKB allocation within the conventional networking stack.
 
 Because it does not require driver-specific support, it offers the broadest compatibility across network interfaces and kernel versions. However, it also incurs the highest processing overhead among XDP execution modes due to the cost of SKB construction.
 
-##### XDP Native Mode
+#### XDP Native Mode
 
 XDP Native mode executes directly within the network driver's receive path before SKB allocation occurs.
 
@@ -463,7 +465,7 @@ By avoiding a substantial portion of the networking stack, this mode achieves si
 
 Native mode is typically considered the preferred software-based XDP execution model whenever hardware support is available.
 
-##### XDP Hardware Offload Mode
+#### XDP Hardware Offload Mode
 
 XDP Hardware Offload extends execution beyond the operating system itself by offloading eBPF programs directly onto supported network interface controllers.
 
@@ -473,7 +475,7 @@ The primary limitation of this mode is the reduced packet context available to t
 
 ---
 
-#### Traffic Control Attachment Points
+### Traffic Control Attachment Points
 
 Traffic Control (TC) operates at a higher abstraction level than XDP and relies on the SKB infrastructure provided by the Linux networking stack.
 
@@ -481,13 +483,13 @@ Unlike XDP, TC supports packet processing in both ingress and egress directions.
 
 Although TC introduces additional processing overhead, it provides significantly richer packet context and greater integration with the kernel networking subsystem.
 
-##### TC Ingress
+#### TC Ingress
 
 TC ingress programs execute after packet reception has completed and the packet has been converted into an SKB.
 
 This attachment point provides access to extensive packet metadata, routing information, and protocol state, making it suitable for advanced packet inspection and manipulation tasks.
 
-##### TC Egress
+#### TC Egress
 
 TC egress programs execute immediately before packets are transmitted through the network driver.
 
@@ -497,7 +499,7 @@ Consequently, TC egress is particularly well suited for traffic shaping, packet 
 
 ---
 
-#### Attachment Point Comparison
+### Attachment Point Comparison
 
 | Attachment Point | Execution Context   | Packet Visibility | Performance |
 | ---------------- | ------------------- | ----------------- | ----------- |
@@ -511,7 +513,7 @@ The choice of attachment point ultimately depends on the objectives of the exper
 
 ---
 
-## Implementation
+# Implementation
 
 Having established the theoretical foundations required to understand packet processing within the Linux networking subsystem, this section describes the architecture and implementation of the framework.
 
@@ -525,13 +527,13 @@ The implementation has been designed around three primary objectives:
 
 Through this architecture, new packet impairment models can be integrated without requiring modifications to the loader, while configuration parameters can be adjusted dynamically during execution through the provided command-line interface.
 
-### Core Components
+## Core Components
 
 The framework is composed of a set of loosely coupled components that collectively provide module discovery, program loading, runtime configuration, statistics collection, and packet processing capabilities.
 
 The architecture follows a clear separation between user-space orchestration logic and kernel-space packet processing logic, allowing each layer to evolve independently while maintaining a consistent interface.
 
-#### `main.c`
+### `main.c`
 
 `main.c` serves as the primary entry point of the application and orchestrates the complete lifecycle of eBPF modules.
 
@@ -552,7 +554,7 @@ The file effectively acts as the control plane of the framework, while packet pr
 
 ---
 
-#### `globals.c` and `globals.h`
+### `globals.c` and `globals.h`
 
 The files `globals.c` and `globals.h` define the shared infrastructure used throughout both the loader and the eBPF modules.
 
@@ -569,7 +571,7 @@ Centralising these definitions ensures consistency across all components and sig
 
 ---
 
-#### Module Directory
+### Module Directory
 
 ```text
 src/
@@ -585,7 +587,7 @@ This approach enables the introduction of new impairment models without requirin
 
 ---
 
-#### Loader Architecture
+### Loader Architecture
 
 The custom loader forms the core of the framework's runtime environment.
 
@@ -632,7 +634,7 @@ As a consequence, newly developed eBPF programs can immediately leverage existin
 
 ---
 
-#### Module Discovery
+### Module Discovery
 
 Upon startup, the framework automatically scans the module directory and identifies all available eBPF implementations.
 
@@ -644,7 +646,7 @@ The design intentionally follows a plug-in style architecture, allowing the fram
 
 ---
 
-#### Program Lifecycle
+### Program Lifecycle
 
 Each eBPF module follows a well-defined lifecycle:
 
@@ -663,7 +665,7 @@ This lifecycle is managed entirely by the loader, allowing module developers to 
 
 ---
 
-### eBPF Modules
+## eBPF Modules
 
 The initial implementation includes two packet loss modules that demonstrate the framework's extensibility while providing support for multiple attachment mechanisms.
 
@@ -682,7 +684,7 @@ Because Traffic Control operates on SKB structures, the module has access to ext
 
 ---
 
-#### `xdp_bernoulli.bpf.c`
+### `xdp_bernoulli.bpf.c`
 
 This module implements the same Bernoulli packet loss model using XDP attachment points.
 
@@ -698,26 +700,7 @@ This allows direct comparison of packet loss behaviour across multiple execution
 
 ---
 
-#### Bernoulli Packet Loss Model
-
-Both modules implement a Bernoulli-based stochastic packet loss process.
-
-For every packet received by the program, an independent probabilistic decision is performed:
-
-- Packet accepted with probability `1 - p`;
-- Packet dropped with probability `p`.
-
-Where:
-
-- `p` represents the configured packet loss probability.
-
-Because each packet is evaluated independently, the resulting packet loss pattern approximates a memoryless random process.
-
-Although relatively simple, this model provides a useful baseline for evaluating application resilience and network protocol behaviour under adverse conditions.
-
----
-
-#### Runtime Statistics
+### Runtime Statistics
 
 Each module continuously collects execution statistics that can be queried through the CLI.
 
@@ -733,7 +716,7 @@ This design minimizes communication overhead while preserving real-time observab
 
 ---
 
-### Hook Points
+## Hook Points
 
 The framework currently supports both Traffic Control and XDP attachment mechanisms.
 
@@ -747,7 +730,7 @@ Consequently, a single packet loss model can be implemented across multiple hook
 
 ---
 
-### Extensibility
+## Extensibility
 
 Extensibility constitutes one of the primary architectural objectives of the framework.
 
@@ -755,7 +738,7 @@ The system has been designed such that new packet impairment models can be integ
 
 To achieve this objective, all eBPF modules adhere to a common structure and interface.
 
-#### Required Structure
+### Required Structure
 
 Every module must expose a program entry point that can be identified by the loader and attached to the appropriate hook point.
 
@@ -781,7 +764,7 @@ As long as these conventions are respected, new modules can be compiled and load
 
 ---
 
-#### Configuration Interface
+### Configuration Interface
 
 Each module may expose its own runtime configuration parameters through the `.config_keys` section.
 
@@ -804,11 +787,11 @@ Consequently, developers can implement sophisticated packet impairment models wh
 
 ---
 
-#### Shared BPF Maps
+### Shared BPF Maps
 
 To ensure interoperability between modules and the loader, several maps are required by all implementations.
 
-##### Statistics Map
+#### Statistics Map
 
 ```c
 struct {
@@ -821,7 +804,7 @@ struct {
 
 Stores packet processing statistics and execution metrics.
 
-##### Configuration Map
+#### Configuration Map
 
 ```c
 struct {
@@ -834,7 +817,7 @@ struct {
 
 Provides a communication channel between user-space configuration commands and kernel-space packet processing logic.
 
-##### Persistent State Map
+#### Persistent State Map
 
 ```c
 typedef struct {
@@ -857,7 +840,7 @@ This map is optional and can be utilised by modules that require state persisten
 
 ---
 
-#### Developing New Modules
+### Developing New Modules
 
 Any `*.bpf.c` file placed within the module directory and conforming to the required interface can be automatically discovered, loaded, and executed by the framework.
 
@@ -875,7 +858,7 @@ As a result, the framework provides a reusable foundation for experimentation, p
 
 ---
 
-## Project Objectives
+# Project Objectives
 
 The primary objective of this project was to design and implement a flexible and extensible packet loss emulation framework capable of operating directly within the Linux kernel networking stack through eBPF.
 
@@ -897,7 +880,7 @@ Ultimately, the project aims not only to provide a functional packet loss emulat
 
 ---
 
-### Educational and Technical Outcomes
+## Educational and Technical Outcomes
 
 Beyond its primary objective as a packet loss emulation framework, this project served as a practical platform for exploring several aspects of systems programming and software engineering.
 
@@ -920,7 +903,7 @@ Throughout the implementation, particular attention was given to maintainability
 
 ---
 
-## Conclusion
+# Conclusion
 
 This project demonstrates how eBPF can be leveraged to implement flexible and efficient network impairment mechanisms directly within the Linux kernel networking stack.
 
@@ -932,7 +915,7 @@ As eBPF continues to play an increasingly important role in networking, observab
 
 ---
 
-## Sources
+# Sources
 
 - [eBPF Documentation](https://ebpf.io/)
 - [libbpf Documentation](https://libbpf.readthedocs.io/en/latest/index.html)
@@ -940,7 +923,7 @@ As eBPF continues to play an increasingly important role in networking, observab
 
 ---
 
-## License
+# License
 
 This project is licensed under the GPL-3.0 License.
 
