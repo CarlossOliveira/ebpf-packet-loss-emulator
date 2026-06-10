@@ -94,6 +94,7 @@ jobs:
             --enable=warning,style,performance,portability \
             --error-exitcode=1 \
             --suppress=unknownMacro \
+            --suppress=missingIncludeSystem \
             --enable=all \
             --std=c11 \
             --verbose
