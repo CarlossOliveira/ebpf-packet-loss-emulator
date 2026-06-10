@@ -56,6 +56,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ebpf-packet-loss-emulator
+          path: build/
 
       - name: Run clang-tidy
         run: |
@@ -84,13 +85,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ebpf-packet-loss-emulator
-
+          path: build/
+        
       - name: Debug artifact contents
-        run: |
-          pwd
-          find . -name compile_commands.json
-          ls -la
-          ls -la build || true
+        run: ls 
 
       - name: Run cppcheck
         run: |
