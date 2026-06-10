@@ -27,7 +27,7 @@
 	"    stats\n"                                                                                                  \
 	"    stats --help\n"
 
-void stats_command(app_context_t *ctx, char **input);
+void stats_command(const app_context_t *ctx, char **input);
 int dump_stats(const app_context_t *ctx);
 
 #endif //! STATS_H

@@ -16,7 +16,7 @@
 static uint64_t read_stats_map(int map_fd, uint8_t key);
 static int dump_to_log_file(const char *filename, const char *data);
 
-void stats_command(app_context_t *ctx, char **input)
+void stats_command(const app_context_t *ctx, char **input)
 {
 	if (input)
 		if (HELP_FLAG) {

@@ -86,9 +86,6 @@ jobs:
         with:
           name: ebpf-packet-loss-emulator
           path: build/
-        
-      - name: Debug artifact contents
-        run: ls 
 
       - name: Run cppcheck
         run: |
