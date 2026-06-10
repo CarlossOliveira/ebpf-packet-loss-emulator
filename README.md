@@ -757,7 +757,7 @@ The main functionality is distributed across the following subsystems:
 The kernel-space implementation contains the eBPF packet processing logic executed by the Linux kernel.
 
 ```text
-src
+src/
 └── kernel-space/
      └── bpf/
           └── modules/
