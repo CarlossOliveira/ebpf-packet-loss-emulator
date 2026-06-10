@@ -7,8 +7,7 @@
 char LICENSE[] SEC("license") = "GPL";
 
 char CONFIG_KEYS[][CONFIG_KEY_SIZE] SEC(".config_keys") = {
-    "packet_loss_percentage",
-    {0}, // Sentinel to mark the end of valid keys
+    "packet_loss_percentage", {0}, // Sentinel to mark the end of valid keys
 };
 
 SEC("xdp")
