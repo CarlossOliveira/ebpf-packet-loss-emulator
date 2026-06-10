@@ -10,8 +10,8 @@ USERSPACE := $(SRC)/user-space
 KERNELSPACE := $(SRC)/kernel-space
 
 BIN_DIR := $(BUILD)/bin
-OBJ_DIR := $(BUILD)/obj
-BPF_OBJ_DIR := $(BUILD)/bpf/modules
+OBJ_DIR := $(BUILD)/user-space
+BPF_OBJ_DIR := $(BUILD)/kernel-space/bpf/modules
 
 BIN := $(BIN_DIR)/ebpf-packet-loss-emulator
 
@@ -23,16 +23,16 @@ LIBBPF_LIBS := $(shell pkg-config --libs libbpf 2>/dev/null)
 
 APP_SRCS := $(shell find $(USERSPACE) -type f -name "*.c")
 
-BPF_SRCS := $(shell find $(KERNELSPACE)/modules -type f -name "*.bpf.c")
+BPF_SRCS := $(shell find $(KERNELSPACE)/bpf/modules -type f -name "*.bpf.c")
 
 APP_OBJS := \
 	$(patsubst $(USERSPACE)/%.c,$(OBJ_DIR)/%.o,$(APP_SRCS))
 
 BPF_OBJS := \
-	$(patsubst $(KERNELSPACE)/modules/%.bpf.c,$(BPF_OBJ_DIR)/%.bpf.o,$(BPF_SRCS))
+	$(patsubst $(KERNELSPACE)/bpf/modules/%.bpf.c,$(BPF_OBJ_DIR)/%.bpf.o,$(BPF_SRCS))
 
 USER_INCLUDES := \
-	-I$(SRC)/include \
+	-I$(SRC)/shared/include \
 	-I$(USERSPACE)/include \
 	-I$(USERSPACE)/utils \
 	-I$(USERSPACE)/core \
@@ -40,10 +40,10 @@ USER_INCLUDES := \
 	-I$(USERSPACE)/cli/commands
 
 BPF_INCLUDES := \
-	-I$(SRC)/include \
-	-I$(KERNELSPACE) \
+	-I$(SRC)/shared/include \
+	-I$(KERNELSPACE)/bpf \
 	-I$(KERNELSPACE)/include \
-	-I$(KERNELSPACE)/utils
+	-I$(KERNELSPACE)/bpf/utils
 
 APP_FLAGS := \
 	-Wall \
@@ -107,7 +107,7 @@ $(OBJ_DIR)/%.o: $(USERSPACE)/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(DEFS) -DAPP -c $< -o $@
 
-$(BPF_OBJ_DIR)/%.bpf.o: $(KERNELSPACE)/modules/%.bpf.c
+$(BPF_OBJ_DIR)/%.bpf.o: $(KERNELSPACE)/bpf/modules/%.bpf.c
 	@echo "Compiling BPF module: $<"
 	@mkdir -p $(@D)
 	$(BPF_CC) $(BPF_CFLAGS) $(DEFS) -DBPF -c $< -o $@

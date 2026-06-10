@@ -293,52 +293,135 @@ The framework supports signal-based control mechanisms:
 ebpf-packet-loss-emulator
 ├── build
 │   ├── bin
-│   │   └── bpf-packet-loss-emulator
-│   └── bpf
-│       └── modules
-│           ├── tc_bernoulli.bpf.o
-│           └── xdp_bernoulli.bpf.o
-├── documentation
-│   ├── egress_data_path.jpg
-│   ├── ingress_data_path.jpg
-│   └── legend.jpg
+│   │   └── ebpf-packet-loss-emulator
+│   ├── kernel-space
+│   │   └── bpf
+│   │       └── modules
+│   │           ├── tc_bernoulli.bpf.o
+│   │           └── xdp_bernoulli.bpf.o
+│   └── user-space
+│       ├── cli
+│       │   ├── cli.d
+│       │   ├── cli.o
+│       │   └── commands
+│       │       ├── clear.d
+│       │       ├── clear.o
+│       │       ├── config.d
+│       │       ├── config.o
+│       │       ├── exit.d
+│       │       ├── exit.o
+│       │       ├── help.d
+│       │       ├── help.o
+│       │       ├── list.d
+│       │       ├── list.o
+│       │       ├── load.d
+│       │       ├── load.o
+│       │       ├── set-default.d
+│       │       ├── set-default.o
+│       │       ├── stats.d
+│       │       ├── stats.o
+│       │       ├── unload.d
+│       │       └── unload.o
+│       ├── core
+│       │   ├── cleanup.d
+│       │   ├── cleanup.o
+│       │   ├── loader.d
+│       │   ├── loader.o
+│       │   ├── setup.d
+│       │   └── setup.o
+│       ├── main.d
+│       ├── main.o
+│       └── utils
+│           ├── elf_utils.d
+│           ├── elf_utils.o
+│           ├── io_utils.d
+│           ├── io_utils.o
+│           ├── privilege_utils.d
+│           ├── privilege_utils.o
+│           ├── string_utils.d
+│           ├── string_utils.o
+│           ├── time_utils.d
+│           └── time_utils.o
+├── docs
+│   └── resources
+│       └── images
+│           ├── CPU.png
+│           ├── driver.png
+│           ├── ebpf-packet-loss-emulator.jpg
+│           ├── egress_data_path.jpg
+│           ├── ingress_data_path.jpg
+│           ├── linux.png
+│           ├── NIC.png
+│           ├── RAM.png
+│           └── user.png
 ├── LICENSE
 ├── Makefile
 ├── README.md
 ├── scripts
 │   └── dependencie_manager.sh
 └── src
-    ├── bpf
-    │   ├── helpers.bpf.h
-    │   ├── modules
-    │   │   ├── tc_bernoulli.bpf.c
-    │   │   └── xdp_bernoulli.bpf.c
-    │   └── utils
-    │       └── math_utils.bpf.h
-    ├── core
-    │   ├── cleanup.c
-    │   ├── globals.c
-    │   ├── helpers.c
-    │   ├── setup.c
-    │   └── utils
-    │       ├── elf_utils.c
-    │       ├── io_utils.c
-    │       ├── privilege_utils.c
-    │       ├── string_utils.c
-    │       └── time_utils.c
-    ├── include
-    │   ├── globals.h
-    │   ├── utils
-    │   │   ├── elf_utils.h
-    │   │   ├── io_utils.h
-    │   │   ├── privilege_utils.h
-    │   │   ├── string_utils.h
-    │   │   └── time_utils.h
-    │   └── vmlinux.h
-    └── main.c
+    ├── kernel-space
+    │   ├── bpf
+    │   │   ├── helpers.bpf.h
+    │   │   ├── modules
+    │   │   │   ├── tc_bernoulli.bpf.c
+    │   │   │   └── xdp_bernoulli.bpf.c
+    │   │   └── utils
+    │   │       └── math_utils.bpf.h
+    │   └── include
+    │       ├── globals.h
+    │       └── vmlinux.h
+    ├── shared
+    │   └── include
+    │       └── common.h
+    └── user-space
+        ├── cli
+        │   ├── cli.c
+        │   ├── cli.h
+        │   └── commands
+        │       ├── clear.c
+        │       ├── clear.h
+        │       ├── commands.h
+        │       ├── config.c
+        │       ├── config.h
+        │       ├── exit.c
+        │       ├── exit.h
+        │       ├── help.c
+        │       ├── help.h
+        │       ├── list.c
+        │       ├── list.h
+        │       ├── load.c
+        │       ├── load.h
+        │       ├── set-default.c
+        │       ├── set-default.h
+        │       ├── stats.c
+        │       ├── stats.h
+        │       ├── unload.c
+        │       └── unload.h
+        ├── core
+        │   ├── cleanup.c
+        │   ├── cleanup.h
+        │   ├── loader.c
+        │   ├── loader.h
+        │   ├── setup.c
+        │   └── setup.h
+        ├── include
+        │   └── globals.h
+        ├── main.c
+        └── utils
+            ├── elf_utils.c
+            ├── elf_utils.h
+            ├── io_utils.c
+            ├── io_utils.h
+            ├── privilege_utils.c
+            ├── privilege_utils.h
+            ├── string_utils.c
+            ├── string_utils.h
+            ├── time_utils.c
+            └── time_utils.h
 ```
 
-The project is organised into several directories that separate core functionality, eBPF modules, utilities, and documentation. The `src` directory contains all source code, while the `build` directory holds compiled binaries and object files. The `documentation` directory includes diagrams illustrating the Linux networking stack and attachment points. The `scripts` directory contains the dependency management script, and the project root includes the Makefile, license, and README documentation. To integrate new eBPF modules, simply add a new `.bpf.c` file to the `src/bpf/modules/` directory following the required structure and interface conventions. All modules placed in this directory will be automatically discovered and made available for selection at runtime after compilation.
+The project is organised into several directories that separate core functionality, eBPF modules, utilities, and documentation. The `src` directory contains all source code, while the `build` directory holds compiled binaries and object files. The `documentation` directory includes diagrams illustrating the Linux networking stack and attachment points. The `scripts` directory contains the dependency management script, and the project root includes the Makefile, license, and README documentation. To integrate new eBPF modules, simply add a new `.bpf.c` file to the `src/kernel-space/bpf/modules/` directory following the required structure and interface conventions. All modules placed in this directory will be automatically discovered and made available for selection at runtime after compilation.
 
 ---
 
@@ -622,7 +705,7 @@ The choice of attachment point ultimately depends on the objectives of the exper
 
 Having established the theoretical foundations required to understand packet processing within the Linux networking subsystem, this section describes the architecture and implementation of the framework.
 
-The project follows a modular architecture composed of a user-space loader and a collection of dynamically loadable eBPF modules. This separation of responsibilities enables independent development of packet processing logic while preserving a stable and reusable loading infrastructure.
+The project follows a modular architecture that separates user-space orchestration logic from kernel-space packet processing logic. User-space components are responsible for module management, configuration, statistics collection, and runtime interaction, while packet processing is performed by dynamically loadable eBPF programs executing within the Linux kernel.
 
 The implementation has been designed around three primary objectives:
 
@@ -630,124 +713,119 @@ The implementation has been designed around three primary objectives:
 - Extensibility;
 - Runtime configurability.
 
-Through this architecture, new packet impairment models can be integrated without requiring modifications to the loader, while configuration parameters can be adjusted dynamically during execution through the provided command-line interface.
+This architecture allows new packet impairment models to be integrated without modifying the loading infrastructure, while configuration parameters can be adjusted dynamically through the interactive command-line interface.
 
 ## Core Components
 
-The framework is composed of a set of loosely coupled components that collectively provide module discovery, program loading, runtime configuration, statistics collection, and packet processing capabilities.
+The framework is composed of several loosely coupled subsystems that collectively provide module discovery, program loading, runtime configuration, statistics collection, and packet processing capabilities.
 
-The architecture follows a clear separation between user-space orchestration logic and kernel-space packet processing logic, allowing each layer to evolve independently while maintaining a consistent interface.
+A clear separation is maintained between user-space control logic and kernel-space execution logic, enabling both layers to evolve independently while preserving a stable interface.
 
-### `main.c`
+### User-Space Components
 
-`main.c` serves as the primary entry point of the application and orchestrates the complete lifecycle of eBPF modules.
+The user-space implementation acts as the control plane of the framework.
 
 Its responsibilities include:
 
-- Parsing command-line arguments;
-- Validating user-provided configuration;
-- Discovering available eBPF modules;
-- Loading and attaching selected programs;
-- Initializing BPF maps;
-- Managing communication between user space and kernel space;
-- Providing the interactive command-line interface;
-- Handling runtime signals;
-- Collecting and displaying statistics;
-- Coordinating module switching operations.
+- Runtime initialization and cleanup;
+- Interactive CLI management;
+- Module discovery;
+- eBPF program loading and unloading;
+- Attachment-point management;
+- Runtime configuration updates;
+- Statistics retrieval and presentation;
+- Signal handling;
+- Communication with BPF maps.
 
-The file effectively acts as the control plane of the framework, while packet processing itself remains entirely within the eBPF programs executing in kernel space.
+The main functionality is distributed across the following subsystems:
 
----
-
-### `globals.c` and `globals.h`
-
-The files `globals.c` and `globals.h` define the shared infrastructure used throughout both the loader and the eBPF modules.
-
-These files contain:
-
-- Global constants;
-- Common data structures;
-- BPF map declarations;
-- Configuration limits;
-- Runtime state definitions;
-- Shared utility functions.
-
-Centralising these definitions ensures consistency across all components and significantly simplifies the development of new modules.
+| Component        | Responsibility                                     |
+| ---------------- | -------------------------------------------------- |
+| `main.c`         | Application entry point and lifecycle coordination |
+| `cli/`           | Interactive command-line interface                 |
+| `cli/commands/`  | Individual command implementations                 |
+| `core/loader.*`  | Module loading and attachment logic                |
+| `core/setup.*`   | Runtime initialization                             |
+| `core/cleanup.*` | Resource cleanup and shutdown                      |
+| `utils/`         | Shared helper utilities                            |
 
 ---
 
-### Module Directory
+### Kernel-Space Components
+
+The kernel-space implementation contains the eBPF packet processing logic executed by the Linux kernel.
 
 ```text
-src/
-└── bpf/
-    └── modules/
+src
+└── kernel-space/
+     └── bpf/
+          └── modules/
 ```
 
-The `src/bpf/modules/` directory contains all loadable eBPF implementations.
+Each module implements a specific packet impairment strategy and is compiled into an independent eBPF object file.
 
-Each module encapsulates a specific packet processing strategy and can be independently compiled, loaded, attached, and configured by the framework.
-
-This approach enables the introduction of new impairment models without requiring modifications to the loader implementation (plugin architecture).
+Shared kernel-side definitions and helper functions are located in the `include/`, `helpers.bpf.h`, and `utils/` directories, allowing functionality to be reused across multiple modules.
 
 ---
 
 ### Loader Architecture
 
-The custom loader forms the core of the framework's runtime environment.
+The loader forms the core runtime subsystem responsible for managing the lifecycle of eBPF modules.
 
 Its primary responsibilities include:
 
 1. Module discovery;
-2. ELF parsing;
-3. BPF map creation;
-4. Program loading;
-5. Program attachment;
-6. Runtime configuration;
-7. Statistics collection.
+2. ELF object loading;
+3. BPF map initialization;
+4. Program verification;
+5. Kernel loading;
+6. Hook attachment;
+7. Runtime configuration;
+8. Statistics collection;
+9. Module detachment and cleanup.
 
 The loading workflow can be summarised as follows:
 
 ```text
-User Selection
-       │
-       ▼
+User Command
+      │
+      ▼
 Module Discovery
-       │
-       ▼
-ELF Parsing
-       │
-       ▼
-Map Creation
-       │
-       ▼
+      │
+      ▼
+ELF Loading
+      │
+      ▼
+Map Initialization
+      │
+      ▼
 Program Verification
-       │
-       ▼
+      │
+      ▼
 Kernel Loading
-       │
-       ▼
+      │
+      ▼
 Hook Attachment
-       │
-       ▼
+      │
+      ▼
 Runtime Execution
 ```
 
-This architecture enables complete decoupling between module implementation and loading infrastructure.
-
-As a consequence, newly developed eBPF programs can immediately leverage existing functionality without requiring additional loader modifications.
+This design completely decouples module implementation from the loading infrastructure, allowing new modules to be integrated without requiring modifications to the loader itself.
 
 ---
 
 ### Module Discovery
 
-Upon startup, the framework automatically scans the module directory and identifies all available eBPF implementations.
+The framework automatically discovers all compiled eBPF modules available in the module directory:
 
-Each discovered module is presented to the user through the interactive selection interface.
+```text
+build/kernel-space/bpf/modules/
+```
 
-This discovery mechanism eliminates the need for hardcoded module registration and ensures that newly added modules are immediately available after compilation.
+Discovered modules are exposed through the `list` command and may be dynamically loaded through the interactive CLI.
 
-The design intentionally follows a plug-in style architecture, allowing the framework to scale as additional packet processing models are developed.
+This approach eliminates hardcoded module registration and enables a plug-in style architecture in which newly added modules become available immediately after compilation.
 
 ---
 
@@ -756,17 +834,18 @@ The design intentionally follows a plug-in style architecture, allowing the fram
 Each eBPF module follows a well-defined lifecycle:
 
 1. Discovery;
-2. Selection;
+2. Loading;
 3. ELF parsing;
-4. Map creation;
+4. Map initialization;
 5. Program verification;
 6. Kernel loading;
 7. Hook attachment;
 8. Runtime execution;
 9. Statistics collection;
-10. Detachment and cleanup.
+10. Detachment;
+11. Cleanup.
 
-This lifecycle is managed entirely by the loader, allowing module developers to focus exclusively on packet processing logic.
+The entire lifecycle is managed by the framework, allowing module developers to focus exclusively on implementing packet processing behaviour.
 
 ---
 
