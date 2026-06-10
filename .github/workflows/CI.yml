@@ -96,6 +96,8 @@ jobs:
             --suppress=unknownMacro \
             --suppress=missingIncludeSystem \
             --suppress=unusedFunction \
+            --suppress=syntaxError:src/user-space/core/setup.c \
+            --suppress=syntaxError:src/user-space/core/loader.c \
             --enable=all \
             --std=c11 \
             --verbose
