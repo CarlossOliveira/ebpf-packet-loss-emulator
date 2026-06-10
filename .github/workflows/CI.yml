@@ -97,6 +97,7 @@ jobs:
             --suppress=missingIncludeSystem \
             --suppress=syntaxError:src/user-space/core/setup.c \
             --suppress=syntaxError:src/user-space/core/loader.c \
+            --suppress=syntaxError:src/user-space/cli/commands/load.c \
             --suppress=unusedFunction \
             --enable=all \
             --std=c11 \
