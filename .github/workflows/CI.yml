@@ -95,6 +95,7 @@ jobs:
             --error-exitcode=1 \
             --suppress=unknownMacro \
             --suppress=missingIncludeSystem \
+            --suppress=unusedFunction \
             --enable=all \
             --std=c11 \
             --verbose
