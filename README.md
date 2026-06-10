@@ -3,6 +3,7 @@
 # eBPF Packet Loss Emulator
 
 [![CI](https://github.com/CarlossOliveira/ebpf-packet-loss-emulator/actions/workflows/CI.yml/badge.svg)](https://github.com/CarlossOliveira/ebpf-packet-loss-emulator/actions/workflows/CI.yml)
+[![CodeQL](https://github.com/CarlossOliveira/ebpf-packet-loss-emulator/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/CarlossOliveira/ebpf-packet-loss-emulator/actions/workflows/github-code-scanning/codeql)
 
 # Table of Contents
 
