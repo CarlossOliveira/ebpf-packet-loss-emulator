@@ -13,7 +13,7 @@ VERBOSE=${VERBOSE:-0}
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 
-INCLUDE_DIR="$PROJECT_ROOT/src/include"
+INCLUDE_DIR="$PROJECT_ROOT/src/kernel-space/include"
 VMLINUX_H="$INCLUDE_DIR/vmlinux.h"
 
 SUDO=${SUDO:-sudo}
