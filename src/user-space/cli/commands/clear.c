@@ -15,6 +15,9 @@ void clear_screen_command(char **input)
 			return;
 		}
 
-	system("clear");
+	if (system("clear") == -1) {
+		print(ERROR, "Failed to clear terminal screen.");
+	}
+
 	print(NULL, "Press Ctrl+C to exit, Ctrl+\\ to change/load module or help for more information.");
 }
