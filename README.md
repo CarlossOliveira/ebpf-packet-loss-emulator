@@ -94,84 +94,196 @@ The installation script automatically installs the toolchain and libraries requi
 
 # Usage
 
-The framework exposes an interactive command-line interface (CLI) that allows users to load eBPF modules, modify runtime parameters, inspect execution statistics, and dynamically switch between packet loss implementations.
+The framework provides an interactive command-line interface (CLI) for loading, configuring, monitoring, and unloading eBPF packet loss emulation modules at runtime.
 
-To launch the emulator:
+To start the emulator:
 
 ```bash
-sudo ./packet_loss_emulator <network_interface> [flags]
+./ebpf-packet-loss-emulator
 ```
 
-where:
+Once launched, the interactive shell becomes available.
 
-- `<network_interface>` specifies the target network interface;
-- `[flags]` determines the attachment mechanism and execution context used by the eBPF program.
+## Available Commands
 
-## Available Flags
+| Command       | Description                                                |
+| ------------- | ---------------------------------------------------------- |
+| `list`        | List all available eBPF modules.                           |
+| `load`        | Load and attach an eBPF module.                            |
+| `unload`      | Detach and unload the active module.                       |
+| `config`      | Modify module-specific configuration parameters.           |
+| `stats`       | Display runtime statistics collected by the active module. |
+| `set-default` | Configure default values used by the `load` command.       |
+| `clear`       | Clear the terminal screen.                                 |
+| `help`        | Display general command documentation.                     |
+| `exit`        | Terminate the emulator and release all resources.          |
 
-| Flag                             | Description                                                    |
-| -------------------------------- | -------------------------------------------------------------- |
-| `egress` / `BPF_TC_EGRESS`       | Attaches the eBPF program to the Traffic Control egress hook.  |
-| `ingress` / `BPF_TC_INGRESS`     | Attaches the eBPF program to the Traffic Control ingress hook. |
-| `driver` / `XDP_FLAGS_DRV_MODE`  | Attaches the eBPF program using XDP Native mode.               |
-| `generic` / `XDP_FLAGS_SKB_MODE` | Attaches the eBPF program using XDP Generic mode.              |
-| `offload` / `XDP_FLAGS_HW_MODE`  | Attaches the eBPF program using XDP Hardware Offload mode.     |
+> [!NOTE]
+> Every command supports the `-h` and `--help` options, providing detailed documentation, available options, and usage examples.
 
-To choose more than one flag, simply concatenate them with a pipe (`|`):
+## Loading eBPF Modules
+
+Modules are loaded dynamically using the `load` command:
+
+```bash
+load -m <module_name> -i <interface_name> [-a <attach_point>]
+```
+
+### Required Parameters
+
+| Option              | Description                            |
+| ------------------- | -------------------------------------- |
+| `-m`, `--module`    | Name of the eBPF module to load.       |
+| `-i`, `--interface` | Network interface used for attachment. |
+
+### Optional Parameters
+
+| Option                 | Description                                           |
+| ---------------------- | ----------------------------------------------------- |
+| `-a`, `--attach-point` | Network attachment point(s) used by the eBPF program. |
+
+### Available Attachment Points
+
+#### Traffic Control (TC)
+
+The following attachment points may be combined:
+
+| Alias     | Kernel Constant  |
+| --------- | ---------------- |
+| `ingress` | `BPF_TC_INGRESS` |
+| `egress`  | `BPF_TC_EGRESS`  |
+
+#### eXpress Data Path (XDP)
+
+Only one XDP mode may be selected at a time:
+
+| Alias     | Kernel Constant      |
+| --------- | -------------------- |
+| `generic` | `XDP_FLAGS_SKB_MODE` |
+| `driver`  | `XDP_FLAGS_DRV_MODE` |
+| `offload` | `XDP_FLAGS_HW_MODE`  |
+
+Multiple attachment points can be combined using the pipe (`|`) separator:
+
+Examples:
+
+```bash
+load -a ingress|egress -m tc_bernoulli -i veth0
+```
+
+```bash
+load -a ingress|egress|driver -m tc_bernoulli -i eth0
+```
+
+> [!NOTE]
+> TC ingress and egress hooks may be combined freely.
+
+> [!WARNING]
+> XDP execution modes are mutually exclusive. Only one of `generic`, `driver`, or `offload` may be selected.
+
+> [!WARNING]
+> Hardware offload support depends on NIC and driver capabilities and may not be available on all systems.
+
+## Default Configuration
+
+The framework allows persistent default values to be configured for module loading operations.
+
+### Configure a Default Interface
 
 Example:
 
 ```bash
-sudo ./packet_loss_emulator eth0 'egress|ingress|driver'
+set-default interface eth0
 ```
 
-> [!NOTE]
-> If no flags are provided, the default attachment points are TC Ingress and XDP Generic.
+### Configure Default Attachment Points
 
-> [!Warning]
-> The `offload` flag requires compatible hardware and may not be supported on all systems.
-
-> [!Warning]
-> You can only select one XDP execution mode at a time, but you can combine XDP with TC to compare different attachment points.
-
-## Interactive CLI
-
-Once loaded, the framework exposes a runtime management interface:
+Examples:
 
 ```bash
-Available commands:
-
-- list   : List available eBPF modules.
-- load   : Load/Switch a eBPF module.
-- unload : Unload the current eBPF module.
-- config : Send module-specific configuration parameters.
-- stats  : Display packet processing statistics.
-- clear  : Clear the terminal window.
-- help   : Display command documentation.
-- exit   : Terminate the emulator.
+set-default attachment-point ingress
 ```
 
-Configuration parameters are transmitted to kernel-space through BPF maps, allowing packet loss behaviour to be modified dynamically without unloading or recompiling the eBPF program.
+```bash
+set-default attachment-point ingress|egress
+```
 
-The framework additionally supports signal-based control:
+### Clear Defaults
 
-| Signal            | Action                                |
-| ----------------- | ------------------------------------- |
-| SIGINT (Ctrl+C)   | Gracefully terminate the emulator     |
-| SIGTERM           | Gracefully terminate the emulator     |
-| SIGQUIT (Ctrl+\\) | Trigger the module-switching workflow |
+```bash
+set-default clear
+```
 
-## Runtime Module Selection
+When a parameter is omitted from the `load` command, the configured default value is used automatically.
 
-After a module is selected, the loader performs the following operations:
+If no default attachment point is configured, the framework applies:
+
+| Technology | Default                        |
+| ---------- | ------------------------------ |
+| TC         | `ingress (BPF_TC_INGRESS)`     |
+| XDP        | `generic (XDP_FLAGS_SKB_MODE)` |
+
+## Runtime Configuration
+
+The active module can be reconfigured dynamically without recompilation or reloading:
+
+Example:
+
+```bash
+config packet_loss_percentage=100
+```
+
+Configuration values are transmitted to kernel space through BPF maps, allowing runtime modification of packet processing behaviour.
+
+## Runtime Statistics
+
+Statistics collected by the active eBPF module can be displayed at any time:
+
+```bash
+stats
+```
+
+These statistics are retrieved directly from kernel-space data structures exposed through BPF maps.
+
+## Runtime Workflow
+
+A typical session may look as follows:
+
+```text
+list
+
+load -m tc_bernoulli -i eth0
+
+config loss_rate=10
+
+stats
+
+unload
+
+exit
+```
+
+## Module Lifecycle
+
+When a module is loaded, the framework performs the following operations:
 
 1. Loads the corresponding ELF object file;
-2. Creates and initializes all required BPF maps;
-3. Loads the eBPF bytecode into the kernel;
-4. Attaches the program to the specified hook point;
-5. Starts the interactive runtime environment.
+2. Creates and initializes the required BPF maps;
+3. Verifies and loads the eBPF bytecode into the kernel;
+4. Attaches the program to the selected network hook(s);
+5. Exposes runtime management through the interactive CLI.
 
-The selected module immediately begins processing packets according to its internal logic and configuration state.
+The module immediately begins processing packets according to its internal implementation and configuration state.
+
+## Signal Handling
+
+The framework supports signal-based control mechanisms:
+
+| Signal               | Action                                |
+| -------------------- | ------------------------------------- |
+| `SIGINT` (`Ctrl+C`)  | Gracefully terminate the application  |
+| `SIGTERM`            | Gracefully terminate the application  |
+| `SIGQUIT` (`Ctrl+\`) | Trigger the module switching workflow |
 
 ---
 

@@ -47,8 +47,11 @@
 	"            driver,  XDP_FLAGS_DRV_MODE\n"                                                                    \
 	"            generic, XDP_FLAGS_SKB_MODE\n"                                                                    \
 	"\n"                                                                                                           \
-	"        If no attachment point is specified, all\n"                                                           \
-	"        default attachment points are cleared.\n"                                                             \
+	"        If no attachment point is specified, the\n"                                                           \
+	"        default attachment points are restored to\n"                                                          \
+	"        their default values:\n"                                                                              \
+	"            TC:  ingress (BPF_TC_INGRESS)\n"                                                                  \
+	"            XDP: generic (XDP_FLAGS_SKB_MODE)\n"                                                              \
 	"\n"                                                                                                           \
 	"    clear\n"                                                                                                  \
 	"        Remove all configured default values.\n"                                                              \

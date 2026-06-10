@@ -5,6 +5,8 @@
 #include "commands.h"
 #include "io_utils.h"
 
+#include <linux/if_link.h>
+
 void set_default_command(app_context_t *ctx, char **input)
 {
 	if (input) {
@@ -32,16 +34,16 @@ void set_default_command(app_context_t *ctx, char **input)
 			}
 		} else if (strcmp(input[1], "attachment-point") == 0) {
 			if (!input[2]) {
-				ctx->interface.default_tc_attach_points = 0;
-				ctx->interface.default_xdp_attach_point = 0;
+				ctx->interface.default_tc_attach_points = BPF_TC_INGRESS;
+				ctx->interface.default_xdp_attach_point = XDP_FLAGS_SKB_MODE;
 				print(NULL, "Default attachment points cleared.");
 			} else {
 				select_attachment_points(ctx, input[2]);
 			}
 		} else if (strcmp(input[1], "clear") == 0) {
 			ctx->interface.default_interface_name[0] = '\0';
-			ctx->interface.default_tc_attach_points = 0;
-			ctx->interface.default_xdp_attach_point = 0;
+			ctx->interface.default_tc_attach_points = BPF_TC_INGRESS;
+			ctx->interface.default_xdp_attach_point = XDP_FLAGS_SKB_MODE;
 			print(NULL, "All default values cleared.");
 		} else {
 			print(ERROR,
