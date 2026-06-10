@@ -35,7 +35,7 @@
 
 # Project Overview
 
-**bpf-packet-loss-emulator** is an extensible network impairment framework built upon the Extended Berkeley Packet Filter (eBPF) technology. The project has been developed to emulate packet loss under controlled and configurable conditions, enabling the evaluation, validation, and performance analysis of applications and network protocols operating in adverse communication environments.
+**ebpf-packet-loss-emulator** is an extensible network impairment framework built upon the Extended Berkeley Packet Filter (eBPF) technology. The project has been developed to emulate packet loss under controlled and configurable conditions, enabling the evaluation, validation, and performance analysis of applications and network protocols operating in adverse communication environments.
 
 Traditional packet loss emulation mechanisms often rely on user-space packet interception or traffic shaping utilities, which may introduce additional latency, context-switching overhead, and limited visibility into low-level packet processing operations. By leveraging eBPF, packet loss decisions can be performed directly within the Linux kernel networking stack, allowing packet processing to occur closer to the actual data path while maintaining low overhead and high flexibility.
 
