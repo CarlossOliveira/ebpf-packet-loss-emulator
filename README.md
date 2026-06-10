@@ -1082,7 +1082,7 @@ As eBPF continues to play an increasingly important role in networking, observab
 
 - [eBPF Documentation](https://ebpf.io/)
 - [libbpf Documentation](https://libbpf.readthedocs.io/en/latest/index.html)
-- [Linux Network Stack Exploration](https://jecklgamis.com/guides/linux-packet-journey?utm_source=chatgpt.com#inbound)
+- [Linux Network Stack Exploration](https://jecklgamis.com/guides/linux-packet-journey)
 
 ---
 
