@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void handle_input(app_context_t *ctx, char *input);
+static void handle_input(app_context_t *ctx, const char *input);
 
 void cli(app_context_t *ctx)
 {
@@ -65,7 +65,7 @@ int input(char *prompt, char *buffer, size_t size)
 	}
 
 	if (line[0] != '\0') {
-		HIST_ENTRY *last = history_get(history_length);
+		const HIST_ENTRY *last = history_get(history_length);
 
 		if (!last || strcmp(last->line, line) != 0) {
 			add_history(line);
@@ -77,7 +77,7 @@ int input(char *prompt, char *buffer, size_t size)
 	return 0;
 }
 
-static void handle_input(app_context_t *ctx, char *input)
+static void handle_input(app_context_t *ctx, const char *input)
 {
 	char **args = strsplit(input, ' ', 0);
 	if (!args || !args[0]) {

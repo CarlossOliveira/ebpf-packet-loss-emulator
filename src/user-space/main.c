@@ -16,7 +16,7 @@
 runtime_events_t *runtime_events;
 app_context_t *ctx;
 
-int main(int argc, char *argv[])
+int main(const int argc, const char *argv[])
 {
 	if (require_root() != 0) {
 		print(ERROR, "This program must be run as root");

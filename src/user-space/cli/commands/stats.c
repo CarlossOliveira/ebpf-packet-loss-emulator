@@ -32,7 +32,7 @@ void stats_command(app_context_t *ctx, char **input)
 	dump_stats(ctx);
 }
 
-int dump_stats(app_context_t *ctx)
+int dump_stats(const app_context_t *ctx)
 {
 	char stats[1024];
 	char time_buffer[20];

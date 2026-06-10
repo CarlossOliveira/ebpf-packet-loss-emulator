@@ -94,7 +94,7 @@ static Elf_Scn *goto_elf_section(Elf *elf, const char *section_name)
 			return NULL;
 		}
 
-		char *name = elf_strptr(elf, shstrndx, shdr.sh_name);
+		const char *name = elf_strptr(elf, shstrndx, shdr.sh_name);
 		if (!name) {
 #ifdef DEBUG
 			printf("elf_utils: Failed to get section name\n");
@@ -157,7 +157,7 @@ void *read_elf_section(const char *filename, const char *section_name, size_t *s
 		return NULL;
 	}
 
-	Elf_Data *data = get_elf_section_data(scn);
+	const Elf_Data *data = get_elf_section_data(scn);
 	if (!data || !data->d_buf || data->d_size == 0) {
 		close_elf_handle(elf);
 		close_elf_file(elf_fd);
