@@ -85,6 +85,13 @@ jobs:
         with:
           name: ebpf-packet-loss-emulator
 
+      - name: Debug artifact contents
+        run: |
+          pwd
+          find . -name compile_commands.json
+          ls -la
+          ls -la build || true
+
       - name: Run cppcheck
         run: |
           cppcheck \
