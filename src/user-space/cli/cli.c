@@ -34,9 +34,19 @@ void cli(app_context_t *ctx)
 			char module_name[256];
 			input((char *)"Select one of the available modules: ", module_name, sizeof(module_name));
 
+			if (strlen(module_name) == 0) {
+				print(WARNING, "No module name entered. Please try again.");
+				continue;
+			}
+
 			char interface_name[256];
-			input((char *)"Enter the interface to attach to (e.g., eth0): ", interface_name,
+			input((char *)"Enter the interface name to attach to (e.g., eth0): ", interface_name,
 			      sizeof(interface_name));
+
+			if (strlen(interface_name) == 0) {
+				print(WARNING, "No interface name entered. Please try again.");
+				continue;
+			}
 
 			load_module_command(
 			    ctx, (char *[]){"load", "--module", module_name, "--interface", interface_name, NULL});

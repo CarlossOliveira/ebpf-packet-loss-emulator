@@ -21,6 +21,8 @@ void unload_module_command(app_context_t *ctx, char **input)
 		return;
 	}
 
+	dump_stats(ctx);
+
 	if (unload_bpf_module(ctx) != 0) {
 		print(ERROR, "Failed to unload module: %s", ctx->bpf.module_name);
 	} else

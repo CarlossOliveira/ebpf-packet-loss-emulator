@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static uint64_t read_stats_map(int map_fd, uint8_t key);
 static int dump_to_log_file(const char *filename, const char *data);
@@ -34,6 +35,14 @@ void stats_command(const app_context_t *ctx, char **input)
 
 int dump_stats(const app_context_t *ctx)
 {
+	if (ctx->bpf.maps.stats_map_fd < 0) {
+		print(WARNING, "Stats map not available");
+		return 1;
+	}
+	if (strlen(ctx->bpf.module_name) == 0) {
+		return 1;
+	}
+
 	char stats[1024];
 	char time_buffer[20];
 

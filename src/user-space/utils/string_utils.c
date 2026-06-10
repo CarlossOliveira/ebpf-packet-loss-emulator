@@ -1,10 +1,10 @@
 #include "string_utils.h"
 
-#include <ctype.h>  // tolower
-#include <stddef.h> // size_t
-#include <stdlib.h> // calloc, free
-#include <string.h> // strdup, strtok
-#include <stdarg.h> // va_list, va_start, va_end
+#include <ctype.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
 
 void lower(char *str)
 {

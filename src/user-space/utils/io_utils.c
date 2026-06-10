@@ -1,10 +1,10 @@
 #include "io_utils.h"
 
-#include <errno.h>     // errno, EINTR
-#include <stdarg.h>    // va_list, va_start, va_end
-#include <stdatomic.h> // atomic_bool, atomic_load
-#include <stdio.h>     // printf, vprintf, getchar, clearerr, stdin, EOF
-#include <string.h>    // strcmp, strerror
+#include <errno.h>
+#include <stdarg.h>
+#include <stdatomic.h>
+#include <stdio.h>
+#include <string.h>
 
 void print(const char *code, const char *msg, ...)
 {

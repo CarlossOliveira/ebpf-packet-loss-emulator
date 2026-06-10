@@ -1,7 +1,7 @@
 #include "time_utils.h"
 
-#include <stddef.h> // size_t
-#include <time.h>   // time_t, time, struct tm, localtime_r, strftime
+#include <stddef.h>
+#include <time.h>
 
 char *get_current_time(char *buffer, size_t size)
 {
