@@ -15,19 +15,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential clang-tools bear
+
       - name: Install project dependencies
         run: make install
 
-      - name: Build project
-        run: make all
+      - name: Build project and generate compilation database
+        run: bear --output compile_commands.json -- make clean all
+
+      - name: Copy compilation database to build directory
+        run: mv compile_commands.json build/
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ebpf-packet-loss-emulator
           path: |
-            build/bin/bpf-packet-loss-emulator
-            build/bpf/modules/*.bpf.o
+            build/
           retention-days: 1
 
   static-analysis-clang-tidy:
@@ -43,15 +48,17 @@ jobs:
       - name: Install tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-tidy clang-tools bear
+          sudo apt-get install -y clang-tidy clang-tools
 
-      - name: Generate compilation database
-        run: bear -- make clean all
+      - name: Open compilation database
+        uses: actions/download-artifact@v4
+        with:
+          name: ebpf-packet-loss-emulator
 
       - name: Run clang-tidy
         run: |
           find src -name "*.c" ! -name "*.bpf.c" -print0 | \
-          xargs -0 clang-tidy -p . \
+          xargs -0 clang-tidy -p build/ \
             --extra-arg=-std=gnu17 \
             -header-filter=src/ \
             -checks=clang-analyzer-core.*,clang-analyzer-unix.*,bugprone-narrowing-conversions
@@ -71,13 +78,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cppcheck bear
 
-      - name: Generate compilation database
-        run: bear -- make clean all
+      - name: Open compilation database
+        uses: actions/download-artifact@v4
+        with:
+          name: ebpf-packet-loss-emulator
 
       - name: Run cppcheck
         run: |
           cppcheck \
-            --project=compile_commands.json \
+            --project=build/compile_commands.json \
             --enable=warning,style,performance,portability \
             --error-exitcode=1 \
             --suppress=unknownMacro \
