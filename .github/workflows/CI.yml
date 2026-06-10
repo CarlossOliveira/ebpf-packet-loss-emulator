@@ -94,7 +94,9 @@ jobs:
             --enable=warning,style,performance,portability \
             --error-exitcode=1 \
             --suppress=unknownMacro \
-            --suppress=missingIncludeSystem
+            --enable=all \
+            --std=gnu17 \
+            --verbose
 
   code-format-clang-format:
     runs-on: ubuntu-latest
