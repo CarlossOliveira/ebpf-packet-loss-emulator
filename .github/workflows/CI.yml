@@ -100,7 +100,7 @@ jobs:
             --suppress=syntaxError:src/user-space/cli/commands/load.c \
             --suppress=unusedFunction \
             --enable=all \
-            --std=c11 \
+            --std=c17 \
             --verbose
 
   code-format-clang-format:
