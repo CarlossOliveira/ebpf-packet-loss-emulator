@@ -4,7 +4,7 @@ IndentWidth: 8
 TabWidth: 8
 UseTab: Always
 
-ColumnLimit: 80
+ColumnLimit: 120
 
 BreakBeforeBraces: Linux
 

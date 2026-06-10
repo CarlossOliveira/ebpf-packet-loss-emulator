@@ -2,14 +2,18 @@ BPF_CC := clang
 CC := gcc
 
 ROOT := $(CURDIR)
+
 SRC := $(ROOT)/src
 BUILD := $(ROOT)/build
 
-BIN := $(BUILD)/bin/bpf-packet-loss-emulator
+USERSPACE := $(SRC)/user-space
+KERNELSPACE := $(SRC)/kernel-space
+
+BIN_DIR := $(BUILD)/bin
+OBJ_DIR := $(BUILD)/obj
 BPF_OBJ_DIR := $(BUILD)/bpf/modules
 
-CORE := $(SRC)/core
-BPF_MOD := $(SRC)/bpf/modules
+BIN := $(BIN_DIR)/ebpf-packet-loss-emulator
 
 PKG_CONFIG_PATH := /usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig$(if $(PKG_CONFIG_PATH),:$(PKG_CONFIG_PATH))
 export PKG_CONFIG_PATH
@@ -17,25 +21,56 @@ export PKG_CONFIG_PATH
 LIBBPF_CFLAGS := $(shell pkg-config --cflags libbpf 2>/dev/null)
 LIBBPF_LIBS := $(shell pkg-config --libs libbpf 2>/dev/null)
 
-INCLUDES := \
+APP_SRCS := $(shell find $(USERSPACE) -type f -name "*.c")
+
+BPF_SRCS := $(shell find $(KERNELSPACE)/modules -type f -name "*.bpf.c")
+
+APP_OBJS := \
+	$(patsubst $(USERSPACE)/%.c,$(OBJ_DIR)/%.o,$(APP_SRCS))
+
+BPF_OBJS := \
+	$(patsubst $(KERNELSPACE)/modules/%.bpf.c,$(BPF_OBJ_DIR)/%.bpf.o,$(BPF_SRCS))
+
+USER_INCLUDES := \
 	-I$(SRC)/include \
-	-I$(SRC)/include/utils
+	-I$(USERSPACE)/include \
+	-I$(USERSPACE)/utils \
+	-I$(USERSPACE)/core \
+	-I$(USERSPACE)/cli \
+	-I$(USERSPACE)/cli/commands
 
-APP_SRCS := \
-	$(wildcard $(CORE)/*.c) \
-	$(wildcard $(CORE)/utils/*.c) \
-	$(SRC)/main.c
+BPF_INCLUDES := \
+	-I$(SRC)/include \
+	-I$(KERNELSPACE) \
+	-I$(KERNELSPACE)/include \
+	-I$(KERNELSPACE)/utils
 
-BPF_SRCS := $(wildcard $(BPF_MOD)/*.bpf.c)
-BPF_OBJS := $(patsubst $(BPF_MOD)/%.bpf.c,$(BPF_OBJ_DIR)/%.bpf.o,$(BPF_SRCS))
+APP_FLAGS := \
+	-Wall \
+	-Wextra \
+	-Wpedantic \
+	-Werror
 
-COMMON_FLAGS := -Wall -Wextra -Wno-unknown-pragmas
+BPF_FLAGS := \
+	-Wall \
+	-Wextra
 
-CFLAGS := $(COMMON_FLAGS) $(INCLUDES) $(LIBBPF_CFLAGS)
-BPF_CFLAGS := -O2 -g $(COMMON_FLAGS) -target bpf \
-	-I$(SRC)/bpf \
-	-I$(SRC)/bpf/utils \
-	$(INCLUDES)
+CFLAGS := \
+	-O2 \
+	-g \
+	-std=gnu17 \
+	-MMD \
+	-MP \
+	$(APP_FLAGS) \
+	$(USER_INCLUDES) \
+	$(LIBBPF_CFLAGS)
+
+BPF_CFLAGS := \
+	-O2 \
+	-g \
+	-target bpf \
+	$(BPF_FLAGS) \
+	$(BPF_INCLUDES)
 
 DEFS := \
 	-DPROJECT_ROOT=\"$(ROOT)\" \
@@ -47,7 +82,11 @@ LDFLAGS := \
 	-Wl,-rpath,/usr/local/lib \
 	-Wl,-rpath,/usr/local/lib64
 
-LDLIBS := $(LIBBPF_LIBS) -lelf -lz -lreadline
+LDLIBS := \
+	$(LIBBPF_LIBS) \
+	-lelf \
+	-lz \
+	-lreadline
 
 DEPS_SCRIPT := $(ROOT)/scripts/dependencie_manager.sh
 
@@ -55,41 +94,77 @@ all: check app bpf
 
 app: $(BIN)
 
-$(BIN): $(APP_SRCS)
-	@echo "Building application..."
-	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -DAPP $(DEFS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
-	@echo "Application compiled successfully."
-
 bpf: $(BPF_OBJS)
 	@echo "All BPF modules compiled successfully."
 
-$(BPF_OBJ_DIR)/%.bpf.o: $(BPF_MOD)/%.bpf.c
+$(BIN): $(APP_OBJS)
+	@echo "Linking application..."
+	@mkdir -p $(@D)
+	$(CC) $^ -o $@ $(LDFLAGS) $(LDLIBS)
+	@echo "Application compiled successfully."
+
+$(OBJ_DIR)/%.o: $(USERSPACE)/%.c
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(DEFS) -DAPP -c $< -o $@
+
+$(BPF_OBJ_DIR)/%.bpf.o: $(KERNELSPACE)/modules/%.bpf.c
 	@echo "Compiling BPF module: $<"
 	@mkdir -p $(@D)
-	$(BPF_CC) $(BPF_CFLAGS) -DBPF $(DEFS) -c $< -o $@
+	$(BPF_CC) $(BPF_CFLAGS) $(DEFS) -DBPF -c $< -o $@
 
 check:
 	@echo "Checking dependencies..."
+
 	@for tool in clang gcc tc pkg-config; do \
-		command -v $$tool >/dev/null || { echo "$$tool not found"; exit 1; }; \
+		command -v $$tool >/dev/null || { \
+			echo "$$tool not found"; \
+			exit 1; \
+		}; \
 	done
-	@pkg-config --exists libbpf || { echo "libbpf not found. Run 'make install' before building."; exit 1; }
+
+	@pkg-config --exists libbpf || { \
+		echo "libbpf not found. Run 'make install' first."; \
+		exit 1; \
+	}
+
 	@echo "All dependencies available."
 
 install uninstall:
 	@echo "$@ing dependencies..."
 	@chmod +x $(DEPS_SCRIPT)
 	$(DEPS_SCRIPT) $@
-	@echo "All dependencies $@ed successfully."
+	@echo "Dependencies $@ed successfully."
+
+format:
+	@echo "Formatting code..."
+
+	@command -v clang-format >/dev/null || { \
+		echo "clang-format not found"; \
+		exit 1; \
+	}
+
+	@find $(SRC) \
+		-type f \
+		\( -name "*.c" -o -name "*.h" \) \
+		! -name "vmlinux.h" \
+		-exec clang-format -i {} \;
+
+	@echo "Code formatted successfully."
 
 clean:
 	rm -rf $(BUILD)
 
-format:
-	@echo "Formatting code..."
-	@command -v clang-format >/dev/null || { echo "clang-format not found"; exit 1; }
-	@find src -type f \( -name "*.c" -o -name "*.h" \) ! -name "vmlinux.h" -exec clang-format -i {} \;
-	@echo "Code formatted successfully."
+compile_commands:
+	bear -- make clean all
 
-.PHONY: all app bpf check install uninstall clean format
+-include $(APP_OBJS:.o=.d)
+
+.PHONY: \
+	all \
+	app \
+	bpf \
+	check \
+	install \
+	uninstall \
+	clean \
+	format

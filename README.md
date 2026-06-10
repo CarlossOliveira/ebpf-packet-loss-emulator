@@ -88,7 +88,7 @@ sudo make uninstall
 The installation script automatically installs the toolchain and libraries required for eBPF development, compilation, loading, and execution.
 
 > [!Warning]
->  It's important to notice that eBPF development requires a compatible Linux Kernel and due to its reliance on specific kernel features, it may not be supported on all distributions or versions. Ensure that your system meets the necessary requirements for eBPF development before proceeding with installation.
+> It's important to notice that eBPF development requires a compatible Linux Kernel and due to its reliance on specific kernel features, it may not be supported on all distributions or versions. Ensure that your system meets the necessary requirements for eBPF development before proceeding with installation.
 
 ---
 
@@ -126,39 +126,13 @@ sudo ./packet_loss_emulator eth0 'egress|ingress|driver'
 ```
 
 > [!NOTE]
->  If no flags are provided, the default attachment points are TC Ingress and XDP Generic.
+> If no flags are provided, the default attachment points are TC Ingress and XDP Generic.
 
 > [!Warning]
->  The `offload` flag requires compatible hardware and may not be supported on all systems.
+> The `offload` flag requires compatible hardware and may not be supported on all systems.
 
 > [!Warning]
 > You can only select one XDP execution mode at a time, but you can combine XDP with TC to compare different attachment points.
-
-## Runtime Module Selection
-
-Upon startup, the loader scans the available eBPF modules and presents them to the user for selection.
-
-Example:
-
-```bash
-Press Ctrl+C to exit, Ctrl+\ to change module.
-
-Available eBPF modules:
--> tc_bernoulli
--> xdp_bernoulli
-
-Enter the name of the eBPF module to load:
-```
-
-After a module is selected, the loader performs the following operations:
-
-1. Loads the corresponding ELF object file;
-2. Creates and initializes all required BPF maps;
-3. Loads the eBPF bytecode into the kernel;
-4. Attaches the program to the specified hook point;
-5. Starts the interactive runtime environment.
-
-The selected module immediately begins processing packets according to its internal logic and configuration state.
 
 ## Interactive CLI
 
@@ -167,9 +141,11 @@ Once loaded, the framework exposes a runtime management interface:
 ```bash
 Available commands:
 
+- list   : List available eBPF modules.
+- load   : Load/Switch a eBPF module.
+- unload : Unload the current eBPF module.
 - config : Send module-specific configuration parameters.
 - stats  : Display packet processing statistics.
-- change : Switch to a different eBPF module.
 - clear  : Clear the terminal window.
 - help   : Display command documentation.
 - exit   : Terminate the emulator.
@@ -184,6 +160,18 @@ The framework additionally supports signal-based control:
 | SIGINT (Ctrl+C)   | Gracefully terminate the emulator     |
 | SIGTERM           | Gracefully terminate the emulator     |
 | SIGQUIT (Ctrl+\\) | Trigger the module-switching workflow |
+
+## Runtime Module Selection
+
+After a module is selected, the loader performs the following operations:
+
+1. Loads the corresponding ELF object file;
+2. Creates and initializes all required BPF maps;
+3. Loads the eBPF bytecode into the kernel;
+4. Attaches the program to the specified hook point;
+5. Starts the interactive runtime environment.
+
+The selected module immediately begins processing packets according to its internal logic and configuration state.
 
 ---
 
@@ -821,27 +809,6 @@ struct {
 ```
 
 Provides a communication channel between user-space configuration commands and kernel-space packet processing logic.
-
-#### Persistent State Map
-
-```c
-typedef struct {
-    __u8 data[BPF_STATE_SIZE];
-} bpf_state_t;
-
-struct {
-    __uint(type, BPF_MAP_TYPE_HASH);
-    __uint(max_entries, 1);
-    __type(key, char[CONFIG_KEY_SIZE]);
-    __type(value, bpf_state_t);
-} bpf_module_memory SEC(".maps");
-```
-
-Provides persistent kernel-space storage for module-specific state.
-
-This mechanism enables stateful packet processing algorithms without requiring external storage or user-space synchronization.
-
-This map is optional and can be utilised by modules that require state persistence across packet processing iterations.
 
 ---
 
