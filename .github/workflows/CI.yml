@@ -15,11 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential clang-tools bear
-
       - name: Install project dependencies
         run: make install
+
+      - name: Install tooling
+        run: | 
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang-tools bear
 
       - name: Build project and generate compilation database
         run: bear --output compile_commands.json -- make clean all
@@ -76,7 +78,7 @@ jobs:
       - name: Install tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y cppcheck bear
+          sudo apt-get install -y cppcheck
 
       - name: Open compilation database
         uses: actions/download-artifact@v4
