@@ -95,7 +95,7 @@ jobs:
             --error-exitcode=1 \
             --suppress=unknownMacro \
             --enable=all \
-            --std=gnu17 \
+            --std=c11 \
             --verbose
 
   code-format-clang-format:
