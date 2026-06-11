@@ -158,11 +158,11 @@ jobs:
 
       - name: Confirm module loading
         run: |
-          if ! grep -q "Module 'tc_bernoulli' attached successfully" ./logs/dump.txt; then
+          if ! grep -q "Module 'tc_bernoulli' loaded successfully" ./logs/dump.txt; then
             echo "error: tc_bernoulli module failed to load"
             exit 1
           fi
-          if ! grep -q "Module 'xdp_bernoulli' attached successfully" ./logs/dump.txt; then
+          if ! grep -q "Module 'xdp_bernoulli' loaded successfully" ./logs/dump.txt; then
             echo "error: xdp_bernoulli module failed to load"
             exit 1
           fi
