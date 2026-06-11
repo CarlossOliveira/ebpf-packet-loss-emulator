@@ -2,7 +2,8 @@
 
 #include "globals.h"
 
-#include "loader.h"
+#include "bpf_manager.h"
+#include "reporting.h"
 
 #include "commands.h"
 #include "io_utils.h"

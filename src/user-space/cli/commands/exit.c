@@ -3,6 +3,7 @@
 #include "globals.h"
 
 #include "commands.h"
+
 #include "io_utils.h"
 
 void exit_command(char **input)

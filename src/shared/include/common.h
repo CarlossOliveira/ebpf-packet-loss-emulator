@@ -1,3 +1,6 @@
+/**
+ * @brief Common definitions and macros for the whole project.
+ */
 #ifndef COMMON_H
 #define COMMON_H
 

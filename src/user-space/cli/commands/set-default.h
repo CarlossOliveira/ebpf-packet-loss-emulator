@@ -68,6 +68,12 @@
 	"    set-default clear\n"                                                                                      \
 	"    set-default --help\n"
 
+/**
+ * @brief Handles the 'set-default' command, allowing the user to configure default values for module loading.
+ *
+ * @param ctx A pointer to the application context containing the BPF and interface information.
+ * @param input An array of strings representing the command-line arguments.
+ */
 void set_default_command(app_context_t *ctx, char **input);
 
 #endif // !SET_DEFAULT_H

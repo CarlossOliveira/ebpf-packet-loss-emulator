@@ -27,6 +27,12 @@
 	"    unload\n"                                                                                                 \
 	"    unload --help\n"
 
+/**
+ * @brief Handles the 'unload' command, detaching and unloading the active eBPF module.
+ *
+ * @param ctx A pointer to the application context containing the BPF and interface information.
+ * @param input An array of strings representing the command-line arguments.
+ */
 void unload_module_command(app_context_t *ctx, char **input);
 
 #endif // !UNLOAD_H

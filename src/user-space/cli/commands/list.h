@@ -24,6 +24,11 @@
 	"    list\n"                                                                                                   \
 	"    list --help\n"
 
+/**
+ * @brief Handles the 'list' command, displaying the names of available eBPF modules in the module search directory.
+ *
+ * @param input An array of strings representing the command-line arguments.
+ */
 void list_modules_command(char **input);
 
 #endif // !LIST_H

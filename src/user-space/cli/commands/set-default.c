@@ -2,7 +2,10 @@
 
 #include "globals.h"
 
+#include "configuration.h"
+
 #include "commands.h"
+
 #include "io_utils.h"
 
 #include <linux/if_link.h>
@@ -38,7 +41,7 @@ void set_default_command(app_context_t *ctx, char **input)
 				ctx->interface.default_xdp_attach_point = XDP_FLAGS_SKB_MODE;
 				print(NULL, "Default attachment points cleared.");
 			} else {
-				select_attachment_points(ctx, input[2]);
+				set_attachment_points(ctx, input[2]);
 			}
 		} else if (strcmp(input[1], "clear") == 0) {
 			ctx->interface.default_interface_name[0] = '\0';

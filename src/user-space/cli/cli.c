@@ -5,7 +5,7 @@
 #include "io_utils.h"
 #include "string_utils.h"
 
-#include "loader.h"
+#include "bpf_manager.h"
 
 #include "commands.h"
 
@@ -15,8 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-static void handle_input(app_context_t *ctx, const char *input);
 
 void cli(app_context_t *ctx)
 {
@@ -58,6 +56,40 @@ void cli(app_context_t *ctx)
 	}
 }
 
+void handle_input(app_context_t *ctx, const char *input)
+{
+	char **args = strsplit(input, ' ', 0);
+	if (!args || !args[0]) {
+		strsplit_free(args);
+		return;
+	}
+
+	if (strcmp(args[0], HELP_COMMAND) == 0)
+		help_command();
+	else if (strcmp(args[0], LIST_MODULES_COMMAND) == 0)
+		list_modules_command(args);
+	else if (strcmp(args[0], LOAD_MODULE_COMMAND) == 0)
+		load_module_command(ctx, args);
+	else if (strcmp(args[0], UNLOAD_MODULE_COMMAND) == 0)
+		unload_module_command(ctx, args);
+	else if (strcmp(args[0], CONFIG_MODULE_COMMAND) == 0)
+		config_module_command(ctx, args);
+	else if (strcmp(args[0], STATS_COMMAND) == 0)
+		stats_command(ctx, args);
+	else if (strcmp(args[0], SET_DEFAULT_COMMAND) == 0)
+		set_default_command(ctx, args);
+	else if (strcmp(args[0], EXEC_COMMAND) == 0)
+		exec_command(args);
+	else if (strcmp(args[0], CLEAR_SCREEN_COMMAND) == 0)
+		clear_screen_command(args);
+	else if (strcmp(args[0], EXIT_COMMAND) == 0)
+		exit_command(args);
+	else
+		print(ERROR, "Unknown command: %s", args[0]);
+
+	strsplit_free(args);
+}
+
 int input(char *prompt, char *buffer, size_t size)
 {
 	if (!buffer || size == 0)
@@ -84,36 +116,4 @@ int input(char *prompt, char *buffer, size_t size)
 	snprintf(buffer, size, "%s", line);
 	free(line);
 	return 0;
-}
-
-static void handle_input(app_context_t *ctx, const char *input)
-{
-	char **args = strsplit(input, ' ', 0);
-	if (!args || !args[0]) {
-		strsplit_free(args);
-		return;
-	}
-
-	if (strcmp(args[0], HELP_COMMAND) == 0)
-		help_command();
-	else if (strcmp(args[0], LIST_MODULES_COMMAND) == 0)
-		list_modules_command(args);
-	else if (strcmp(args[0], LOAD_MODULE_COMMAND) == 0)
-		load_module_command(ctx, args);
-	else if (strcmp(args[0], UNLOAD_MODULE_COMMAND) == 0)
-		unload_module_command(ctx, args);
-	else if (strcmp(args[0], CONFIG_MODULE_COMMAND) == 0)
-		config_module_command(ctx, args);
-	else if (strcmp(args[0], STATS_COMMAND) == 0)
-		stats_command(ctx, args);
-	else if (strcmp(args[0], SET_DEFAULT_COMMAND) == 0)
-		set_default_command(ctx, args);
-	else if (strcmp(args[0], CLEAR_SCREEN_COMMAND) == 0)
-		clear_screen_command(args);
-	else if (strcmp(args[0], EXIT_COMMAND) == 0)
-		exit_command(args);
-	else
-		print(ERROR, "Unknown command: %s", args[0]);
-
-	strsplit_free(args);
 }

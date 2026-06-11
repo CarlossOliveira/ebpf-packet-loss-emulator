@@ -1,4 +1,4 @@
-#include "loader.h"
+#include "bpf_manager.h"
 
 #include "globals.h"
 
@@ -142,7 +142,7 @@ static int attach_bpf_program(app_context_t *ctx)
 			points[n++] = BPF_TC_EGRESS;
 
 		if (n == 0) {
-			print(ERROR, "No valid attach point specified for TC module");
+			print(ERROR, "No valid attachment point specified for TC module");
 			return -1;
 		}
 		for (int i = 0; i < n; i++) {
@@ -231,7 +231,7 @@ static int detach_bpf_program(app_context_t *ctx)
 			points[n++] = BPF_TC_EGRESS;
 
 		if (n == 0) {
-			print(ERROR, "No valid attach point specified for TC module");
+			print(ERROR, "No valid attachment point specified for TC module");
 			return -1;
 		}
 

@@ -1,3 +1,6 @@
+/**
+ * @brief Global variables and definitions for the kernel-space eBPF program.
+ */
 #ifndef KERNEL_SPACE_GLOBALS_H
 #define KERNEL_SPACE_GLOBALS_H
 
@@ -12,6 +15,9 @@
 #define TC_ACT_OK 0
 #define TC_ACT_SHOT 2
 
+/**
+ * @brief Map for storing statistics.
+ */
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
 	__uint(max_entries, 3);
@@ -19,6 +25,9 @@ struct {
 	__type(value, __u64);
 } stats_map SEC(".maps");
 
+/**
+ * @brief Map for storing configuration values.
+ */
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
 	__uint(max_entries, MAX_CONFIG_ENTRIES + 1); // +1 for sentinel

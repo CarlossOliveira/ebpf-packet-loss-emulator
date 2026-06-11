@@ -49,7 +49,9 @@ APP_FLAGS := \
 	-Wall \
 	-Wextra \
 	-Wpedantic \
-	-Werror
+	-Werror \
+	-fsanitize=address \
+	-fsanitize=undefined
 
 BPF_FLAGS := \
 	-Wall \
@@ -80,7 +82,9 @@ LDFLAGS := \
 	-L/usr/local/lib \
 	-L/usr/local/lib64 \
 	-Wl,-rpath,/usr/local/lib \
-	-Wl,-rpath,/usr/local/lib64
+	-Wl,-rpath,/usr/local/lib64 \
+	-fsanitize=address \
+    -fsanitize=undefined
 
 LDLIBS := \
 	$(LIBBPF_LIBS) \

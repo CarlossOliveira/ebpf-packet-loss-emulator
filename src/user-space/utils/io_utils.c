@@ -5,6 +5,7 @@
 #include <stdatomic.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 
 void print(const char *code, const char *msg, ...)
 {
@@ -60,4 +61,37 @@ void wait_for_char(char expected_char, atomic_bool *active)
 			continue;
 		}
 	}
+}
+
+int make_path(const char *path)
+{
+	if (!path || !*path)
+		return -1;
+
+	char tmp_path[1024];
+
+	if (snprintf(tmp_path, sizeof(tmp_path), "%s", path) >= (int)sizeof(tmp_path))
+		return -1;
+
+	size_t len = strlen(tmp_path);
+
+	/* Remove trailing '/' except for root */
+	if (len > 1 && tmp_path[len - 1] == '/')
+		tmp_path[len - 1] = '\0';
+
+	for (char *p = tmp_path + 1; *p; p++) {
+		if (*p == '/') {
+			*p = '\0';
+
+			if (mkdir(tmp_path, 0755) != 0 && errno != EEXIST)
+				return -1;
+
+			*p = '/';
+		}
+	}
+
+	if (mkdir(tmp_path, 0755) != 0 && errno != EEXIST)
+		return -1;
+
+	return 0;
 }

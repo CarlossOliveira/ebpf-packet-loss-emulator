@@ -34,6 +34,13 @@
 	"    config loss_rate=10 delay_ms=100\n"                                                                       \
 	"    config --help\n"
 
+/**
+ * @brief Handles the 'config' command, allowing the user to update configuration parameters of the currently loaded
+ * eBPF module.
+ *
+ * @param ctx Application context.
+ * @param input An array of strings representing the command-line arguments.
+ */
 void config_module_command(app_context_t *ctx, char **input);
 
 #endif // !CONFIG_H

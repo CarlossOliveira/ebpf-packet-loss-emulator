@@ -21,6 +21,11 @@
 	"    clear\n"                                                                                                  \
 	"    clear --help\n"
 
+/**
+ * @brief Handles the 'clear' command, clearing the terminal screen and redrawing the prompt.
+ *
+ * @param input An array of strings representing the command-line arguments.
+ */
 void clear_screen_command(char **input);
 
 #endif // !CLEAR_H

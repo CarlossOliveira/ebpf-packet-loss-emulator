@@ -39,6 +39,10 @@
 	     "    stats\n"                                                                                             \
 	     "\n" BOLD "SEE ALSO\n" RESET "    bpftool(8), tc(8), ip-link(8)\n"
 
+/**
+ * @brief Handles the 'help' command, displaying a comprehensive help message with usage instructions and command
+ * documentation.
+ */
 void help_command(void);
 
 #endif // !HELP_H

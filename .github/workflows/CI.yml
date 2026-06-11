@@ -91,17 +91,15 @@ jobs:
         run: |
           cppcheck \
             --project=build/compile_commands.json \
-            --enable=warning,style,performance,portability \
+            --std=c17 \
+            --enable=all \
             --error-exitcode=1 \
             --suppress=unknownMacro \
             --suppress=missingIncludeSystem \
             --suppress=syntaxError:src/user-space/core/setup.c \
-            --suppress=syntaxError:src/user-space/core/loader.c \
-            --suppress=syntaxError:src/user-space/cli/commands/load.c \
-            --suppress=unusedFunction \
-            --enable=all \
-            --std=c17 \
-            --verbose
+            --suppress=syntaxError:src/user-space/core/bpf_manager.c \
+            --suppress=syntaxError:src/user-space/core/configuration.c \
+            --suppress=unusedFunction
 
   code-format-clang-format:
     runs-on: ubuntu-latest

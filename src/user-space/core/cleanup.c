@@ -2,7 +2,7 @@
 
 #include "globals.h"
 
-#include "loader.h"
+#include "bpf_manager.h"
 
 #include "elf_utils.h"
 #include "io_utils.h"

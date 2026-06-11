@@ -27,7 +27,12 @@
 	"    stats\n"                                                                                                  \
 	"    stats --help\n"
 
+/**
+ * @brief Handles the 'stats' command, displaying statistics for the currently loaded eBPF module.
+ *
+ * @param ctx A pointer to the application context containing the BPF and interface information.
+ * @param input An array of strings representing the command-line arguments.
+ */
 void stats_command(const app_context_t *ctx, char **input);
-int dump_stats(const app_context_t *ctx);
 
 #endif //! STATS_H

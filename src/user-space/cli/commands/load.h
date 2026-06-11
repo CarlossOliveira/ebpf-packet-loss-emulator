@@ -30,7 +30,7 @@
 	"        XDP: generic (XDP_FLAGS_SKB_MODE)\n"                                                                  \
 	"\n"                                                                                                           \
 	"OPTIONS\n"                                                                                                    \
-	"    -a, --attach-point <attach_point>\n"                                                                      \
+	"    -a, --attachment-point <attachment_points>\n"                                                             \
 	"        Attachment point(s) for the eBPF program.\n"                                                          \
 	"\n"                                                                                                           \
 	"        Multiple attachment points may be specified\n"                                                        \
@@ -66,7 +66,12 @@
 	"    load -a offload -m xdp_bernoulli -i eth0\n"                                                               \
 	"    load --help\n"
 
+/**
+ * @brief Handles the 'load' command, loading and attaching an eBPF module based on user input.
+ *
+ * @param ctx A pointer to the application context containing the BPF and interface information.
+ * @param input An array of strings representing the command-line arguments.
+ */
 void load_module_command(app_context_t *ctx, char **input);
-void select_attachment_points(app_context_t *ctx, const char *raw_attach_points);
 
 #endif // !LOAD_H
