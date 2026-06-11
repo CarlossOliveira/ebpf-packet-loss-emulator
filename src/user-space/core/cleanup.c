@@ -22,5 +22,7 @@ int cleanup(app_context_t *ctx)
 		ctx->bpf.maps.stats_map_fd = -1;
 	}
 
+	free(ctx);
+
 	return status;
 }

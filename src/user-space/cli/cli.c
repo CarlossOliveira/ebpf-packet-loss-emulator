@@ -50,8 +50,7 @@ void cli(app_context_t *ctx)
 
 			load_module_command(
 			    ctx, (char *[]){"load", "--module", module_name, "--interface", interface_name, NULL});
-			continue; // Skip handling the command since the user likely just wants to switch modules and
-				  // not execute a command
+			continue;
 		}
 
 		if (strlen(cmd) > 0)
