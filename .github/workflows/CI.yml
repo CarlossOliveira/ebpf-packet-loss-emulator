@@ -147,6 +147,12 @@ jobs:
           name: ebpf-packet-loss-emulator
           path: build/
 
+      - name: "DEBUG: List build directory contents"
+        run: |
+          ls -a build/
+          ls -a ..
+          ls -a .
+
       - name: Test module loading
         run: |
           sudo ./build/bin/ebpf-packet-loss-emulator \
