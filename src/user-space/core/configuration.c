@@ -72,7 +72,7 @@ void set_module(app_context_t *ctx, char *module_name)
 	if (ctx->bpf.object == NULL) {
 		print(ERROR, "Failed to attach module: %s", module_name);
 	} else {
-		print(SUCCESS, "Module '%s' attached successfully", ctx->bpf.module_name);
+		print(SUCCESS, "Module '%s' loaded successfully", ctx->bpf.module_name);
 
 		char bpf_elf_filename[512];
 		snprintf(bpf_elf_filename, sizeof(bpf_elf_filename), "%s/%s.bpf.o", BPF_OBJECT_DIR,
