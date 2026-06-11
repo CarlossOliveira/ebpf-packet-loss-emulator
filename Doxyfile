@@ -32,7 +32,7 @@ INLINE_SOURCES = YES
 
 RECURSIVE              = YES
 
-INPUT                  = src
+INPUT                  = README.md src
 OUTPUT_DIRECTORY       = docs
 
 FILE_PATTERNS          = *.c *.h
