@@ -61,7 +61,7 @@ int main(const int argc, const char *argv[])
 		char dir_path[PATH_MAX];
 		snprintf(dir_path, sizeof(dir_path), "%s", argv[dump_flag_index + 1]);
 
-		char *dir = dirname(dir_path);
+		const char *dir = dirname(dir_path);
 
 		if (strcmp(dir, ".") != 0)
 			if (make_path(dir) == -1) {

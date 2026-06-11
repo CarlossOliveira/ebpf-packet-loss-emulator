@@ -28,7 +28,7 @@ void load_module_command(app_context_t *ctx, char **input)
 		int arg = 1; // Start from 1 to skip the "load" command itself
 		int flags_chosen = 0;
 		while (input[arg]) {
-			char *current_arg = input[arg];
+			const char *current_arg = input[arg];
 
 			if (strcmp(current_arg, "--attachment-point") == 0 || strcmp(current_arg, "-a") == 0) {
 				if (!input[arg + 1]) {
