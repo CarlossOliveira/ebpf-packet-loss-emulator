@@ -20,9 +20,17 @@ void exec_command(char **input)
 		char buffer[1024];
 		size_t offset = 0;
 		buffer[0] = '\0';
-		for (int i = 1; input[i]; i++) {
-			offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%s%s", input[i],
+		for (int i = 1; input[i] && offset < sizeof(buffer) - 1; i++) {
+			int ret = snprintf(buffer + offset, sizeof(buffer) - offset, "%s%s", input[i],
 					   input[i + 1] ? " " : "");
+
+			if (ret < 0)
+				return -1;
+
+			if ((size_t)ret >= sizeof(buffer) - offset)
+				break;
+
+			offset += (size_t)ret;
 		}
 
 		int ret = system(buffer);
