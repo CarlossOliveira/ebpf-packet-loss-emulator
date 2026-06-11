@@ -25,7 +25,7 @@ void exec_command(char **input)
 					   input[i + 1] ? " " : "");
 
 			if (ret < 0)
-				return -1;
+				return;
 
 			if ((size_t)ret >= sizeof(buffer) - offset)
 				break;
