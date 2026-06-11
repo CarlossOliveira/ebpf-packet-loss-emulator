@@ -27,6 +27,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y doxygen graphviz
 
+      - name: Retrieve style files
+        run: |
+          git submodule add https://github.com/jothepro/doxygen-awesome-css.git
+          cd doxygen-awesome-css
+          git checkout v2.4.2
+
+      - name: Copy style files
+        run: |
+          mkdir -p docs/html/theme
+          cp doxygen-awesome-css/doxygen-awesome.css docs/html/theme/
+          cp doxygen-awesome-css/doxygen-awesome-sidebar-only.css docs/html/theme/
+
       - name: Generate documentation
         run: doxygen Doxyfile
 
