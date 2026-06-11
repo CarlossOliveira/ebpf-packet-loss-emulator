@@ -22,15 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install project dependencies
-        run: make install
-
-      - name: Open compilation database
-        uses: actions/download-artifact@v4
-        with:
-          name: ebpf-packet-loss-emulator
-          path: build/
-
       - name: Install tooling
         run: |
           sudo apt-get update
