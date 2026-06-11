@@ -76,7 +76,8 @@ void load_module_command(app_context_t *ctx, char **input)
 		if ((strlen(module_name) == 0 && strlen(ctx->bpf.module_name) == 0) ||
 		    (strlen(interface) == 0 && strlen(ctx->interface.default_interface_name) == 0) ||
 		    (strlen(attachment_points) == 0 && ctx->interface.default_tc_attach_points == 0 &&
-		     ctx->interface.default_xdp_attach_point == 0) || flags_chosen == 0 || flags_chosen > 3) {
+		     ctx->interface.default_xdp_attach_point == 0) ||
+		    flags_chosen == 0 || flags_chosen > 3) {
 			print(ERROR, "Module name and interface are required. Usage: load --module \"<module_name>\" "
 				     "--interface \"<interface_name>\"");
 			return;
