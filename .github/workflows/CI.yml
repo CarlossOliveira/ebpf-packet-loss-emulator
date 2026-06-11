@@ -16,18 +16,18 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install project dependencies
-        run: make install 2>&1 | tee build.log
+        run: make install
 
       - name: Install tooling
         run: | 
           sudo apt-get update
-          sudo apt-get install -y build-essential clang-tools bear 2>&1 | tee build.log
+          sudo apt-get install -y build-essential clang-tools bear
 
       - name: Build project and generate compilation database
-        run: bear --output compile_commands.json -- make clean all 2>&1 | tee build.log
+        run: bear --output compile_commands.json -- make clean all
 
       - name: Copy compilation database to build directory
-        run: mv compile_commands.json build/ 2>&1 | tee build.log
+        run: mv compile_commands.json build/
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -37,13 +37,6 @@ jobs:
             build/
           retention-days: 1
 
-      - name: Annotate formatting issues
-        run: |
-          if grep -q "error" build.log; then
-            grep "error" build.log | while IFS= read -r line; do
-              echo "::error::$line"
-            done
-          fi
 
   static-analysis-clang-tidy:
     runs-on: ubuntu-latest
@@ -53,12 +46,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install project dependencies
-        run: make install 2>&1 | tee static-analysis-clang-tidy.log
+        run: make install
 
       - name: Install tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-tidy clang-tools 2>&1 | tee static-analysis-clang-tidy.log
+          sudo apt-get install -y clang-tidy clang-tools
 
       - name: Open compilation database
         uses: actions/download-artifact@v4
@@ -72,15 +65,8 @@ jobs:
           xargs -0 clang-tidy -p build/ \
             --extra-arg=-std=gnu17 \
             -header-filter=src/ \
-            -checks=clang-analyzer-core.*,clang-analyzer-unix.*,bugprone-narrowing-conversions 2>&1 | tee static-analysis-clang-tidy.log
+            -checks=clang-analyzer-core.*,clang-analyzer-unix.*,bugprone-narrowing-conversions
 
-      - name: Annotate formatting issues
-        run: |
-          if grep -q "error" static-analysis-clang-tidy.log; then
-            grep "error" static-analysis-clang-tidy.log | while IFS= read -r line; do
-              echo "::error::$line"
-            done
-          fi
 
   static-analysis-cppcheck:
     runs-on: ubuntu-latest
@@ -90,12 +76,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install project dependencies
-        run: make install 2>&1 | tee static-analysis-cppcheck.log
+        run: make install
 
       - name: Install tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y cppcheck 2>&1 | tee static-analysis-cppcheck.log
+          sudo apt-get install -y cppcheck
 
       - name: Open compilation database
         uses: actions/download-artifact@v4
@@ -115,15 +101,8 @@ jobs:
             --suppress=syntaxError:src/user-space/core/setup.c \
             --suppress=syntaxError:src/user-space/core/bpf_manager.c \
             --suppress=syntaxError:src/user-space/core/configuration.c \
-            --suppress=unusedFunction 2>&1 | tee static-analysis-cppcheck.log
+            --suppress=unusedFunction
 
-      - name: Annotate formatting issues
-        run: |
-          if grep -q "error" static-analysis-cppcheck.log; then
-            grep "error" static-analysis-cppcheck.log | while IFS= read -r line; do
-              echo "::error::$line"
-            done
-          fi
 
   code-format-clang-format:
     runs-on: ubuntu-latest
@@ -137,20 +116,13 @@ jobs:
       - name: Install tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format 2>&1 | tee code-format-clang-format.log
+          sudo apt-get install -y clang-format
 
       - name: Check formatting
         run: |
           clang-format --dry-run --Werror \
-          $(find src -type f \( -name "*.c" -o -name "*.h" \) ! -name "vmlinux.h") 2>&1 | tee code-format-clang-format.log
+          $(find src -type f \( -name "*.c" -o -name "*.h" \) ! -name "vmlinux.h")
 
-      - name: Annotate formatting issues
-        run: |
-          if grep -q "error" code-format-clang-format.log; then
-            grep "error" code-format-clang-format.log | while IFS= read -r line; do
-              echo "::error::$line"
-            done
-          fi
 
   test:
     runs-on: ubuntu-latest
@@ -162,12 +134,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install project dependencies
-        run: make install 2>&1 | tee test.log
+        run: make install
 
       - name: Install tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq 2>&1 | tee test.log
+          sudo apt-get install -y jq
 
       - name: Open compilation database
         uses: actions/download-artifact@v4
@@ -179,7 +151,14 @@ jobs:
         run: |
           sudo ./build/bin/ebpf-packet-loss-emulator \
           --run "list; load --module tc_bernoulli --interface eth0 --attachment-point ingress; exec sleep 10; unload; load -m xdp_bernoulli -i eth0 -a generic; delay 10; exit;" \
-          --dump ./logs/dump.txt 2>&1 | tee test.log
+          --dump ./logs/dump.txt
+
+      - name: "DEBUG: Output module loading logs"
+        run: |
+          ls -a ..
+          ls -a .
+          ls ./logs
+          cat ./logs/dump.txt
 
       - name: Confirm module loading
         run: |
@@ -190,12 +169,4 @@ jobs:
           if ! grep -q "Module 'xdp_bernoulli' attached successfully" ./logs/dump.txt; then
             echo "error: xdp_bernoulli module failed to load"
             exit 1
-          fi
-
-      - name: Annotate formatting issues
-        run: |
-          if grep -q "error" test.log; then
-            grep "error" test.log | while IFS= read -r line; do
-              echo "::error::$line"
-            done
           fi
