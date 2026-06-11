@@ -7,6 +7,7 @@
 #include "elf_utils.h"
 #include "io_utils.h"
 
+#include <stdlib.h>
 #include <net/if.h>
 #include <unistd.h>
 
