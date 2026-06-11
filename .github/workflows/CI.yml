@@ -146,12 +146,15 @@ jobs:
         with:
           name: ebpf-packet-loss-emulator
           path: build/
+      
+      - name: Give execute permissions to the binary
+        run: sudo chmod +x build/bin/ebpf-packet-loss-emulator
 
       - name: "DEBUG: List build directory contents"
         run: |
-          ls -a build/
-          ls -a ..
-          ls -a .
+          ls -la build/
+          ls -la ..
+          ls -la .
 
       - name: Test module loading
         run: |
@@ -161,9 +164,9 @@ jobs:
 
       - name: "DEBUG: Output module loading logs"
         run: |
-          ls -a ..
-          ls -a .
-          ls ./logs
+          ls -la ..
+          ls -la .
+          ls -la ./logs
           cat ./logs/dump.txt
 
       - name: Confirm module loading
