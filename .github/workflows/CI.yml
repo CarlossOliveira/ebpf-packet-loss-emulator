@@ -150,24 +150,11 @@ jobs:
       - name: Give execute permissions to the binary
         run: sudo chmod +x build/bin/ebpf-packet-loss-emulator
 
-      - name: "DEBUG: List build directory contents"
-        run: |
-          ls -la build/
-          ls -la ..
-          ls -la .
-
       - name: Test module loading
         run: |
           sudo ./build/bin/ebpf-packet-loss-emulator \
-          --run "list; load --module tc_bernoulli --interface eth0 --attachment-point ingress; exec sleep 10; unload; load -m xdp_bernoulli -i eth0 -a generic; delay 10; exit;" \
+          --run "list; load --module tc_bernoulli --interface eth0 --attachment-point ingress; exec sleep 15; unload; load -m xdp_bernoulli -i eth0 -a generic; sleep 15; exit;" \
           --dump ./logs/dump.txt
-
-      - name: "DEBUG: Output module loading logs"
-        run: |
-          ls -la ..
-          ls -la .
-          ls -la ./logs
-          cat ./logs/dump.txt
 
       - name: Confirm module loading
         run: |
@@ -179,3 +166,6 @@ jobs:
             echo "error: xdp_bernoulli module failed to load"
             exit 1
           fi
+
+      - name: See test results
+        run: cat ./logs/dump.txt
