@@ -4,7 +4,9 @@ GENERATE_HTML = YES
 FULL_SIDEBAR           = YES
 HTML_DYNAMIC_SECTIONS  = YES
 
-HTML_EXTRA_STYLESHEET = docs/html/theme/*.css 
+HTML_EXTRA_STYLESHEET = \
+    docs/html/theme/doxygen-awesome.css \
+    docs/html/theme/doxygen-awesome-sidebar-only.css
 USE_MDFILE_AS_MAINPAGE = README.md
 
 HAVE_DOT = YES

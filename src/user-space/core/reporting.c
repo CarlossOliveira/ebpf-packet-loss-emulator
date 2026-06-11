@@ -41,24 +41,28 @@ int dump_stats(const app_context_t *ctx)
 
 	snprintf(stats, sizeof(stats),
 		 "---------- STATS ----------\n[%s]\nBPF Module: "
-		 "%s\nPackets "
+		 "%s\nTC Attach Points: %d\nXDP Attach Point: %d\nPackets "
 		 "processed: %lu\nPackets dropped: %lu\nTotal "
 		 "execution time: %lu "
 		 "ns\n---------------------------",
 		 time_buffer, strlen(ctx->bpf.module_name) > 0 ? ctx->bpf.module_name : "Module not loaded",
-		 packets_processed, packets_dropped, total_execution_time);
+		 ctx->interface.tc_attach_points, ctx->interface.xdp_attach_point, packets_processed, packets_dropped,
+		 total_execution_time);
 	printf("%s", BLUE);
 	print(NULL, "%s", stats);
 	printf("%s", RESET);
 
 	snprintf(stats, sizeof(stats),
 		 "{\"module\":\"%s\","
+		 "\"tc_attach_points\":%d,"
+		 "\"xdp_attach_point\":%d,"
 		 "\"timestamp\":\"%s\","
 		 "\"packets_processed\":%lu,"
 		 "\"packets_dropped\":%lu,"
 		 "\"total_execution_time\":%lu}",
-		 strlen(ctx->bpf.module_name) > 0 ? ctx->bpf.module_name : "Module not loaded", time_buffer,
-		 packets_processed, packets_dropped, total_execution_time);
+		 strlen(ctx->bpf.module_name) > 0 ? ctx->bpf.module_name : "Module not loaded",
+		 ctx->interface.tc_attach_points, ctx->interface.xdp_attach_point, time_buffer, packets_processed,
+		 packets_dropped, total_execution_time);
 
 	return dump_to_log_file(LOG_FILE, stats);
 }

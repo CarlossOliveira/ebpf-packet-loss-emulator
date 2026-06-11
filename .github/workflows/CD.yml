@@ -35,9 +35,9 @@ jobs:
 
       - name: Copy style files
         run: |
-          mkdir -p docs/html/theme
-          cp doxygen-awesome-css/doxygen-awesome.css docs/html/theme/
-          cp doxygen-awesome-css/doxygen-awesome-sidebar-only.css docs/html/theme/
+          mkdir -p docs/theme
+          cp doxygen-awesome-css/doxygen-awesome.css docs/theme/
+          cp doxygen-awesome-css/doxygen-awesome-sidebar-only.css docs/theme/
 
       - name: Generate documentation
         run: doxygen Doxyfile
