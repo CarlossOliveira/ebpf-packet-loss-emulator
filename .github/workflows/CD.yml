@@ -29,8 +29,7 @@ jobs:
 
       - name: Retrieve style files from doxygen-awesome-css repository
         run: |
-          git submodule add https://github.com/jothepro/doxygen-awesome-css.git
-          git checkout v2.4.2
+          git clone https://github.com/jothepro/doxygen-awesome-css.git
 
       - name: Copy extension and style files to documentation folder
         run: |
@@ -45,7 +44,6 @@ jobs:
 
       - name: Remove style files from repository
         run: |
-          git rm -rf --cached doxygen-awesome-css
           rm -rf doxygen-awesome-css
 
       - name: Generate documentation
