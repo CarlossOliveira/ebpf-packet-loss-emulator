@@ -1,13 +1,21 @@
 PROJECT_NAME           = "ebpf-packet-loss-emulator"
 
 GENERATE_HTML = YES
+GENERATE_LATEX = NO
 FULL_SIDEBAR           = YES
 HTML_DYNAMIC_SECTIONS  = YES
 
+HTML_HEADER            = docs/html/header.html
+HTML_EXTRA_FILES = \
+    docs/html/extensions/doxygen-awesome-darkmode-toggle.js \
+    docs/html/extensions/doxygen-awesome-paragraph-link.js \
+    docs/html/extensions/doxygen-awesome-interactive-toc.js
+
 HTML_EXTRA_STYLESHEET = \
     docs/html/theme/doxygen-awesome.css \
-    docs/html/theme/doxygen-awesome-sidebar-only.css
-USE_MDFILE_AS_MAINPAGE = README.md
+    docs/html/theme/doxygen-awesome-sidebar-only.css \
+    docs/html/theme/doxygen-awesome-sidebar-only-darkmode-toggle.css \
+# USE_MDFILE_AS_MAINPAGE = README.md
 
 HAVE_DOT = YES
 
@@ -34,7 +42,7 @@ INLINE_SOURCES = YES
 
 RECURSIVE              = YES
 
-INPUT                  = README.md src
+INPUT                  = src
 OUTPUT_DIRECTORY       = docs
 
 FILE_PATTERNS          = *.c *.h

@@ -27,17 +27,26 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y doxygen graphviz
 
-      - name: Retrieve style files
+      - name: Retrieve style files from doxygen-awesome-css repository
         run: |
           git submodule add https://github.com/jothepro/doxygen-awesome-css.git
-          cd doxygen-awesome-css
           git checkout v2.4.2
 
-      - name: Copy style files
+      - name: Copy extension and style files to documentation folder
         run: |
-          mkdir -p docs/theme
-          cp doxygen-awesome-css/doxygen-awesome.css docs/theme/
-          cp doxygen-awesome-css/doxygen-awesome-sidebar-only.css docs/theme/
+          mkdir -p docs/html/theme
+          mkdir -p docs/html/extensions
+          cp doxygen-awesome-css/doxygen-awesome.css docs/html/theme/
+          cp doxygen-awesome-css/doxygen-awesome-sidebar-only.css docs/html/theme/
+          cp doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css docs/html/theme/
+          cp doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js docs/html/extensions/
+          cp doxygen-awesome-css/doxygen-awesome-paragraph-link.js docs/html/extensions/
+          cp doxygen-awesome-css/doxygen-awesome-interactive-toc.js docs/html/extensions/
+
+      - name: Remove style files from repository
+        run: |
+          git rm -rf --cached doxygen-awesome-css
+          rm -rf doxygen-awesome-css
 
       - name: Generate documentation
         run: doxygen Doxyfile
