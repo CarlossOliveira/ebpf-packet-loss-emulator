@@ -57,27 +57,35 @@ struct bpf_object *load_bpf_module(app_context_t *ctx)
 		errno = err < 0 ? -err : err;
 		print(ERROR, "Failed to load eBPF object file: %s", path);
 		bpf_object__close(ctx->bpf.object);
-		return ctx->bpf.object = NULL;
+
+		ctx->bpf.object = NULL;
+		return NULL;
 	}
 
 	int new_stats_map_fd = open_map(ctx->bpf.object, "stats_map");
 	if (new_stats_map_fd < 0) {
 		print(ERROR, "Failed to open stats map");
 		bpf_object__close(ctx->bpf.object);
-		return ctx->bpf.object = NULL;
+
+		ctx->bpf.object = NULL;
+		return NULL;
 	}
 
 	int new_config_map_fd = open_map(ctx->bpf.object, "config_map");
 	if (new_config_map_fd < 0) {
 		print(ERROR, "Failed to open config map");
 		bpf_object__close(ctx->bpf.object);
-		return ctx->bpf.object = NULL;
+
+		ctx->bpf.object = NULL;
+		return NULL;
 	}
 
-	if (attach_bpf_program(ctx) <= 0) {
+	if (attach_bpf_program(ctx) < 0) {
 		print(ERROR, "Failed to attach eBPF program");
 		bpf_object__close(ctx->bpf.object);
-		return ctx->bpf.object = NULL;
+
+		ctx->bpf.object = NULL;
+		return NULL;
 	}
 
 	ctx->bpf.maps.stats_map_fd = new_stats_map_fd;
@@ -89,7 +97,7 @@ struct bpf_object *load_bpf_module(app_context_t *ctx)
 int unload_bpf_module(app_context_t *ctx)
 {
 	int ret = 0;
-	if (detach_bpf_program(ctx) <= 0) {
+	if (detach_bpf_program(ctx) < 0) {
 		print(ERROR, "Failed to detach eBPF program");
 		ret = -1;
 	}
