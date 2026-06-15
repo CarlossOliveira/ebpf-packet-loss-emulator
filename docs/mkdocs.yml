@@ -1,0 +1,39 @@
+site_name: eBPF Packet Loss Emulator
+site_description: An extensible network impairment framework built upon the Extended Berkeley Packet Filter (eBPF) technology, designed to emulate packet loss under controlled and configurable conditions.
+site_author: Carlos Miguel Oliveira
+site_url: https://github.com/CarlossOliveira/ebpf-packet-loss-emulator
+
+docs_dir: .
+site_dir: build
+use_directory_urls: true
+
+plugins:
+  - search
+  - mermaid2
+  - gen-files:
+      scripts:
+        - plugins/mkdocs/import_to_virtual_file_tree.py
+
+hooks:
+  - plugins/mkdocs/rewrite_html_href.py
+
+markdown_extensions:
+  - md_in_html
+
+nav:
+  - Project Overview: README.md
+  - Getting Started:
+      - Installation: user-guides/getting-started/setup.md
+      - Cleanup: user-guides/getting-started/cleanup.md
+  - Architecture:
+      - Overview: source/architecture/architecture.md
+      - Networking Stack: source/architecture/networking-stack.md
+      - Modules: source/architecture/modules.md
+  - Development:
+      - Adding Modules: source/development/developing-new-modules.md
+  - Conclusion: conclusions.md
+
+  - API Reference: source/api/index.html
+
+theme:
+  name: material

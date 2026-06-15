@@ -17,7 +17,16 @@
 #include <linux/if_link.h>
 #include <net/if.h>
 
+/**
+ * @brief Sets up signal handling for the application.
+ */
 static void signal_setup(void);
+
+/**
+ * @brief Signal handler function.
+ *
+ * @param signum The signal number.
+ */
 static void signal_handler(int signum);
 
 app_context_t *setup(void)

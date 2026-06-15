@@ -4,7 +4,7 @@ CC := gcc
 ROOT := $(CURDIR)
 
 SRC := $(ROOT)/src
-BUILD := $(ROOT)/build
+BUILD := $(ROOT)/build/src
 
 USERSPACE := $(SRC)/user-space
 KERNELSPACE := $(SRC)/kernel-space
@@ -22,14 +22,10 @@ LIBBPF_CFLAGS := $(shell pkg-config --cflags libbpf 2>/dev/null)
 LIBBPF_LIBS := $(shell pkg-config --libs libbpf 2>/dev/null)
 
 APP_SRCS := $(shell find $(USERSPACE) -type f -name "*.c")
-
 BPF_SRCS := $(shell find $(KERNELSPACE)/bpf/modules -type f -name "*.bpf.c")
 
-APP_OBJS := \
-	$(patsubst $(USERSPACE)/%.c,$(OBJ_DIR)/%.o,$(APP_SRCS))
-
-BPF_OBJS := \
-	$(patsubst $(KERNELSPACE)/bpf/modules/%.bpf.c,$(BPF_OBJ_DIR)/%.bpf.o,$(BPF_SRCS))
+APP_OBJS := $(patsubst $(USERSPACE)/%.c,$(OBJ_DIR)/%.o,$(APP_SRCS))
+BPF_OBJS := $(patsubst $(KERNELSPACE)/bpf/modules/%.bpf.c,$(BPF_OBJ_DIR)/%.bpf.o,$(BPF_SRCS))
 
 USER_INCLUDES := \
 	-I$(SRC)/shared/include \
@@ -45,34 +41,12 @@ BPF_INCLUDES := \
 	-I$(KERNELSPACE)/include \
 	-I$(KERNELSPACE)/bpf/utils
 
-APP_FLAGS := \
-	-Wall \
-	-Wextra \
-	-Wpedantic \
-	-Werror \
-	-fsanitize=address \
-	-fsanitize=undefined
+APP_FLAGS := -Wall -Wextra -Wpedantic -Werror -fsanitize=address -fsanitize=undefined
+BPF_FLAGS := -Wall -Wextra
 
-BPF_FLAGS := \
-	-Wall \
-	-Wextra
+CFLAGS := -O2 -g -std=gnu17 -MMD -MP $(APP_FLAGS) $(USER_INCLUDES) $(LIBBPF_CFLAGS)
 
-CFLAGS := \
-	-O2 \
-	-g \
-	-std=gnu17 \
-	-MMD \
-	-MP \
-	$(APP_FLAGS) \
-	$(USER_INCLUDES) \
-	$(LIBBPF_CFLAGS)
-
-BPF_CFLAGS := \
-	-O2 \
-	-g \
-	-target bpf \
-	$(BPF_FLAGS) \
-	$(BPF_INCLUDES)
+BPF_CFLAGS := -O2 -g -target bpf $(BPF_FLAGS) $(BPF_INCLUDES)
 
 DEFS := \
 	-DPROJECT_ROOT=\"$(ROOT)\" \
@@ -84,17 +58,17 @@ LDFLAGS := \
 	-Wl,-rpath,/usr/local/lib \
 	-Wl,-rpath,/usr/local/lib64 \
 	-fsanitize=address \
-    -fsanitize=undefined
+	-fsanitize=undefined
 
-LDLIBS := \
-	$(LIBBPF_LIBS) \
-	-lelf \
-	-lz \
-	-lreadline
+LDLIBS := $(LIBBPF_LIBS) -lelf -lz -lreadline
 
 DEPS_SCRIPT := $(ROOT)/scripts/dependencie_manager.sh
 
-all: check app bpf
+# ---------------- RULES ----------------
+
+all: build docs
+
+build: app bpf
 
 app: $(BIN)
 
@@ -116,59 +90,44 @@ $(BPF_OBJ_DIR)/%.bpf.o: $(KERNELSPACE)/bpf/modules/%.bpf.c
 	@mkdir -p $(@D)
 	$(BPF_CC) $(BPF_CFLAGS) $(DEFS) -DBPF -c $< -o $@
 
-check:
-	@echo "Checking dependencies..."
+docs:
+	@echo "Generating documentation..."
+	$(DEPS_SCRIPT) $@
+	@echo "Documentation generated successfully."
 
-	@for tool in clang gcc tc pkg-config; do \
-		command -v $$tool >/dev/null || { \
-			echo "$$tool not found"; \
-			exit 1; \
-		}; \
-	done
+# ---------------- CLEAN ----------------
 
-	@pkg-config --exists libbpf || { \
-		echo "libbpf not found. Run 'make install' first."; \
-		exit 1; \
-	}
+clean: clean-docs clean-build
+	@echo "Cleaning project..."
 
-	@echo "All dependencies available."
+clean-docs:
+	@echo "Cleaning documentation..."
+	rm -rf $(ROOT)/docs/source/build
+
+	@echo "Documentation cleaned successfully."
+
+clean-build:
+	@echo "Cleaning build artifacts..."
+	rm -rf $(BUILD)
+	@echo "Build artifacts cleaned successfully."
+
+# ---------------- OTHER ----------------
 
 install uninstall:
 	@echo "$@ing dependencies..."
 	@chmod +x $(DEPS_SCRIPT)
 	$(DEPS_SCRIPT) $@
-	@echo "Dependencies $@ed successfully."
+	@echo "Done."
 
 format:
 	@echo "Formatting code..."
-
-	@command -v clang-format >/dev/null || { \
-		echo "clang-format not found"; \
-		exit 1; \
-	}
-
-	@find $(SRC) \
-		-type f \
-		\( -name "*.c" -o -name "*.h" \) \
-		! -name "vmlinux.h" \
-		-exec clang-format -i {} \;
-
+	command -v clang-format >/dev/null || exit 1
+	find $(SRC) -type f \( -name "*.c" -o -name "*.h" \) ! -name "vmlinux.h" -exec clang-format -i {} \;
 	@echo "Code formatted successfully."
 
-clean:
-	rm -rf $(BUILD)
-
-compile_commands:
+compile-commands:
 	bear -- make clean all
 
 -include $(APP_OBJS:.o=.d)
 
-.PHONY: \
-	all \
-	app \
-	bpf \
-	check \
-	install \
-	uninstall \
-	clean \
-	format
+.PHONY: all build app bpf docs install uninstall clean clean-docs clean-build format compile-commands

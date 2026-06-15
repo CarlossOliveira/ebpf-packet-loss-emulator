@@ -13,7 +13,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * @brief Reads a uint64_t value from a BPF map given its file descriptor and a key.
+ *
+ * @param map_fd The file descriptor of the stats map.
+ * @param key The key to look up in the stats map.
+ * @return The uint64_t value associated with the key, or 0 on failure.
+ */
 static uint64_t read_stats_map(int map_fd, uint8_t key);
+
+/**
+ * @brief Dumps data to a log file.
+ *
+ * @param filename The name of the log file.
+ * @param data The data to dump.
+ * @return int 0 on success, or -1 on failure.
+ */
 static int dump_to_log_file(const char *filename, const char *data);
 
 int dump_stats(const app_context_t *ctx)

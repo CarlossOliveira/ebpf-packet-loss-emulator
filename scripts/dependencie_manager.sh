@@ -5,33 +5,47 @@ set -eu
 VERBOSE=${VERBOSE:-0}
 [ "$VERBOSE" = "1" ] && set -x
 
+# ------------------------------------------------------------
+# System check
+# ------------------------------------------------------------
 [ "$(uname -s)" = "Linux" ] || {
     echo "[!] This project requires Linux."
     exit 1
 }
 
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-PROJECT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+# ------------------------------------------------------------
+# Paths (ROOT is deterministic)
+# ------------------------------------------------------------
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+PROJECT_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd -P)
 
 INCLUDE_DIR="$PROJECT_ROOT/src/kernel-space/include"
 VMLINUX_H="$INCLUDE_DIR/vmlinux.h"
 
-SUDO=${SUDO:-sudo}
-TMP_DIR=${TMPDIR:-/tmp}
-
+TMP_DIR="${TMPDIR:-/tmp}"
 LIBBPF_DIR="$TMP_DIR/libbpf"
 LINUX_DIR="$TMP_DIR/linux-bpftool"
 
+DOC_VENV="$PROJECT_ROOT/.docs-venv"
+
 KERNEL_RELEASE=$(uname -r)
 
+SUDO=${SUDO:-sudo}
+
+# ------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------
 apt_install() {
     echo "[*] apt-get install: $*"
     $SUDO apt-get update
     $SUDO apt-get install -y "$@"
 }
 
+# ------------------------------------------------------------
+# Dependencies
+# ------------------------------------------------------------
 install_deps() {
-    echo "[*] Installing dependencies..."
+    echo "[*] Installing build dependencies..."
 
     if command -v apt-get >/dev/null 2>&1; then
         echo "[*] Detected apt-based system"
@@ -60,70 +74,57 @@ install_deps() {
     fi
 }
 
+# ------------------------------------------------------------
+# libbpf
+# ------------------------------------------------------------
 install_libbpf_from_packages() {
-    echo "[*] Trying libbpf package..."
-
     if command -v apt-get >/dev/null 2>&1; then
-        if apt-cache show libbpf-dev >/dev/null 2>&1; then
-            apt_install libbpf-dev
-        else
-            return 1
-        fi
+        apt_install libbpf-dev
+        track_pkg "libbpf-dev"
+        return 0
     elif command -v yum >/dev/null 2>&1; then
-        if yum info libbpf-devel >/dev/null 2>&1; then
-            $SUDO yum install -y libbpf-devel
-        else
-            return 1
-        fi
+        $SUDO yum install -y libbpf-devel
+        return 0
     elif command -v apk >/dev/null 2>&1; then
-        if ! $SUDO apk add libbpf-dev; then
-            return 1
-        fi
-    else
-        return 1
+        $SUDO apk add libbpf-dev
+        return 0
     fi
 
-    PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --exists libbpf 2>/dev/null
+    return 1
 }
 
 install_libbpf() {
+    echo "[*] Installing libbpf..."
+
     PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
 
     if PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --exists libbpf 2>/dev/null; then
-        echo "[*] libbpf already installed."
-        echo "[*] libbpf version: $(PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --modversion libbpf)"
+        echo "[*] libbpf already available"
         return
     fi
 
     if install_libbpf_from_packages; then
-        echo "[+] libbpf installed from package."
-        echo "[*] libbpf version: $(PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --modversion libbpf)"
+        echo "[+] libbpf installed via package manager"
         return
     fi
 
-    echo "[*] Installing libbpf from source..."
-    echo "[*] Source directory: $LIBBPF_DIR"
+    echo "[*] Building libbpf from source..."
 
     rm -rf "$LIBBPF_DIR"
-
     git clone --depth=1 https://github.com/libbpf/libbpf.git "$LIBBPF_DIR"
 
-    echo "[*] Building libbpf..."
     make -C "$LIBBPF_DIR/src"
-
-    echo "[*] Installing libbpf..."
     $SUDO make -C "$LIBBPF_DIR/src" install
 
     if command -v ldconfig >/dev/null 2>&1; then
-        echo "[*] Running ldconfig..."
         $SUDO ldconfig
     fi
-
-    echo "[+] libbpf installed."
 }
 
+# ------------------------------------------------------------
+# bpftool
+# ------------------------------------------------------------
 bpftool_works() {
-    [ -n "${1:-}" ] || return 1
     [ -x "$1" ] || return 1
     [ -r /sys/kernel/btf/vmlinux ] || return 1
 
@@ -139,153 +140,174 @@ find_bpftool() {
         /usr/lib/linux-tools/*/bpftool
     do
         [ -x "$tool" ] || continue
-
-        if bpftool_works "$tool"; then
-            echo "$tool"
-            return 0
-        fi
+        bpftool_works "$tool" && { echo "$tool"; return 0; }
     done
 
     if command -v bpftool >/dev/null 2>&1; then
         tool=$(command -v bpftool)
-
-        if bpftool_works "$tool"; then
-            echo "$tool"
-            return 0
-        fi
+        bpftool_works "$tool" && { echo "$tool"; return 0; }
     fi
 
-    return 1
-}
-
-install_bpftool_from_packages() {
-    command -v apt-get >/dev/null 2>&1 || return 1
-
-    echo "[*] Trying bpftool packages for kernel: $KERNEL_RELEASE"
-
-    for pkg in \
-        "linux-tools-$KERNEL_RELEASE" \
-        "linux-tools-$KERNEL_RELEASE-standard-WSL2" \
-        "linux-cloud-tools-$KERNEL_RELEASE-standard-WSL2" \
-        "linux-tools-standard-WSL2" \
-        "linux-cloud-tools-standard-WSL2" \
-        linux-tools-generic \
-        linux-tools-common \
-        bpftool
-    do
-        echo "[*] Checking package: $pkg"
-
-        if apt-cache show "$pkg" >/dev/null 2>&1; then
-            echo "[*] Installing package: $pkg"
-            apt_install "$pkg"
-
-            if BPFTool=$(find_bpftool); then
-                echo "[+] Working bpftool found: $BPFTool"
-                return 0
-            fi
-        fi
-    done
-
-    echo "[*] No working packaged bpftool found."
     return 1
 }
 
 install_bpftool() {
-    if BPFTool=$(find_bpftool); then
-        echo "[*] bpftool already working: $BPFTool"
+    echo "[*] Installing bpftool..."
+
+    if find_bpftool >/dev/null 2>&1; then
+        echo "[*] bpftool already working"
         return
     fi
 
-    echo "[*] No working bpftool found."
-
-    if install_bpftool_from_packages; then
-        return
-    fi
-
-    echo "[*] Building bpftool from Linux source..."
-    echo "[*] Source directory: $LINUX_DIR"
+    echo "[*] No packaged bpftool found, building from kernel..."
 
     rm -rf "$LINUX_DIR"
-
     git clone --depth=1 https://github.com/torvalds/linux.git "$LINUX_DIR"
 
     make -C "$LINUX_DIR/tools/bpf/bpftool"
     $SUDO make -C "$LINUX_DIR/tools/bpf/bpftool" install
-
-    if BPFTool=$(find_bpftool); then
-        echo "[+] bpftool installed from source: $BPFTool"
-        return
-    fi
-
-    echo "[!] bpftool was built, but it still does not work."
-    exit 1
 }
 
+# ------------------------------------------------------------
+# vmlinux.h
+# ------------------------------------------------------------
 generate_vmlinux_h() {
     echo "[*] Generating vmlinux.h..."
 
     mkdir -p "$INCLUDE_DIR"
 
     [ -r /sys/kernel/btf/vmlinux ] || {
-        echo "[!] /sys/kernel/btf/vmlinux not found."
-        echo "[!] Your kernel may not have BTF support enabled."
+        echo "[!] BTF not available"
         exit 1
     }
 
     BPFTool=$(find_bpftool || true)
 
     [ -n "$BPFTool" ] || {
-        echo "[!] No working bpftool found."
+        echo "[!] bpftool not found"
         exit 1
     }
 
-    echo "[*] Using bpftool: $BPFTool"
-
     "$BPFTool" btf dump file /sys/kernel/btf/vmlinux format c > "$VMLINUX_H"
 
-    echo "[+] Generated: $VMLINUX_H"
+    echo "[+] Generated $VMLINUX_H"
+}
+
+install_documentation_dependencies() {
+    echo "[*] Installing documentation dependencies..."
+
+    if command -v apt-get >/dev/null 2>&1; then
+        apt_install python3-pip python3-venv doxygen graphviz
+    elif command -v yum >/dev/null 2>&1; then
+        $SUDO yum install -y python3-pip python3-venv doxygen graphviz
+    elif command -v apk >/dev/null 2>&1; then
+        $SUDO apk add python3 py3-pip py3-venv doxygen graphviz
+    else
+        echo "[!] Unsupported distribution."
+        exit 1
+    fi
+
+    # --------------------------------------------------
+    # Create venv only if it does not exist
+    # --------------------------------------------------
+    if [ ! -d "$DOC_VENV" ]; then
+        echo "[*] Creating virtual environment..."
+        python3 -m venv "$DOC_VENV"
+    else
+        echo "[*] Reusing existing virtual environment..."
+    fi
+
+    VENV_PY="$DOC_VENV/bin/python"
+
+    # sanity check (prevents broken venv issues)
+    if [ ! -x "$VENV_PY" ]; then
+        echo "[!] Broken venv detected. Recreating..."
+        rm -rf "$DOC_VENV"
+        python3 -m venv "$DOC_VENV"
+    fi
+
+    # upgrade pip always (cheap + safe)
+    "$VENV_PY" -m pip install --upgrade pip
+
+    # install requirements only if needed
+    if [ ! -f "$DOC_VENV/.deps_installed" ]; then
+        echo "[*] Installing python dependencies..."
+        "$VENV_PY" -m pip install -r "$PROJECT_ROOT/docs/requirements.txt"
+        touch "$DOC_VENV/.deps_installed"
+    else
+        echo "[*] Python dependencies already installed"
+    fi
+
+    echo "[+] Docs environment ready."
+}
+
+# ------------------------------------------------------------
+# Docs build
+# ------------------------------------------------------------
+build_docs() {
+    echo "[*] Building docs..."
+
+    mkdir -p "$PROJECT_ROOT/docs/source/api"
+
+    doxygen "$(realpath "$PROJECT_ROOT/docs/Doxyfile")"
+
+    MKDOCS="$DOC_VENV/bin/mkdocs"
+
+    [ -x "$MKDOCS" ] || {
+        echo "[!] mkdocs not installed in venv"
+        exit 1
+    }
+
+    "$MKDOCS" build -f "docs/mkdocs.yml" -d "$PROJECT_ROOT/build/docs"
+
+    echo "[+] Docs built"
 }
 
 uninstall() {
-    echo "[*] Removing non-critical files installed by this script..."
+    echo "[*] Uninstalling project artifacts..."
 
     rm -f "$VMLINUX_H"
     rm -rf "$LIBBPF_DIR" "$LINUX_DIR"
+    rm -rf "$DOC_VENV"
 
     $SUDO rm -f /usr/local/lib/libbpf.*
     $SUDO rm -f /usr/local/lib64/libbpf.*
-    $SUDO rm -f /usr/local/lib/pkgconfig/libbpf.pc
-    $SUDO rm -f /usr/local/lib64/pkgconfig/libbpf.pc
     $SUDO rm -rf /usr/local/include/bpf
+    $SUDO rm -f /usr/local/lib/pkgconfig/libbpf.pc
 
-    $SUDO rm -f /usr/local/sbin/bpftool
     $SUDO rm -f /usr/local/bin/bpftool
-    $SUDO rm -f /usr/local/share/bash-completion/completions/bpftool
+    $SUDO rm -f /usr/local/sbin/bpftool
 
     if command -v ldconfig >/dev/null 2>&1; then
-        echo "[*] Running ldconfig..."
         $SUDO ldconfig
     fi
 
-    echo "[+] Uninstall complete."
+    echo "[+] Uninstall complete"
 }
 
+# ------------------------------------------------------------
+# CLI
+# ------------------------------------------------------------
 case "${1:-}" in
     install)
         install_deps
         install_libbpf
         install_bpftool
         generate_vmlinux_h
-
-        echo
-        echo "[+] Installation complete."
+        echo "[+] Installation complete"
         ;;
+
+    docs)
+        install_documentation_dependencies
+        build_docs
+        ;;
+
     uninstall)
         uninstall
         ;;
+
     *)
-        echo "Usage: $0 {install|uninstall}"
-        echo "Debug: VERBOSE=1 $0 install"
+        echo "Usage: $0 {install|docs|uninstall}"
         exit 1
         ;;
 esac

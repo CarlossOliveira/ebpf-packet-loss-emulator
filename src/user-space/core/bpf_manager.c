@@ -7,7 +7,20 @@
 
 #include <errno.h>
 
+/**
+ * @brief Attaches the loaded eBPF program to the specified interface and attach point.
+ *
+ * @param ctx Pointer to the application context containing BPF and interface information.
+ * @return int Number of successful attachments, or -1 on failure.
+ */
 static int attach_bpf_program(app_context_t *ctx);
+
+/**
+ * @brief Detaches the eBPF program from the specified interface and attach point.
+ *
+ * @param ctx Pointer to the application context containing BPF and interface information.
+ * @return int Number of successful detachments, or -1 on failure.
+ */
 static int detach_bpf_program(app_context_t *ctx);
 
 int open_map(struct bpf_object *obj, char *map_name)

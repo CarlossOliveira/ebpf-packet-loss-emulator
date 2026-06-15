@@ -22,41 +22,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install tooling
+      - name: Install Doxygen
         run: |
           sudo apt-get update
-          sudo apt-get install -y doxygen graphviz
+          sudo apt-get install -y doxygen graphviz pip
 
-      - name: Retrieve style files from doxygen-awesome-css repository
+      - name: Install Python dependencies
         run: |
-          git clone https://github.com/jothepro/doxygen-awesome-css.git
+          pip install properdocs mkdocs-gen-files mkdocs-material 
 
-      - name: Copy extension and style files to documentation folder
-        run: |
-          mkdir -p docs/html/theme
-          mkdir -p docs/html/extensions
-          cp doxygen-awesome-css/doxygen-awesome.css docs/html/theme/
-          cp doxygen-awesome-css/doxygen-awesome-sidebar-only.css docs/html/theme/
-          cp doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css docs/html/theme/
-          cp doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js docs/html/extensions/
-          cp doxygen-awesome-css/doxygen-awesome-paragraph-link.js docs/html/extensions/
-          cp doxygen-awesome-css/doxygen-awesome-interactive-toc.js docs/html/extensions/
-
-      - name: Remove style files from repository
-        run: |
-          rm -rf doxygen-awesome-css
-
-      - name: Generate documentation
+      - name: Generate Doxygen API
         run: doxygen Doxyfile
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/html
+      - name: Build MkDocs site
+        working-directory: docs/website
+        run: npm run build
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v1
