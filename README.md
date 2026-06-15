@@ -93,7 +93,7 @@ The complete API reference is available [here](/api/index.html).
       Next
    </div>
    <div style="font-weight:600;">
-      Setup →
+      Setup 
    </div>
 </a>
 </div>
