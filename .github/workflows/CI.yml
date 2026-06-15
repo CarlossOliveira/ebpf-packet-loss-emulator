@@ -150,11 +150,36 @@ jobs:
       - name: Give execute permissions to the binary
         run: sudo chmod +x build/src/bin/ebpf-packet-loss-emulator
 
+      - name: Debug network state
+        run: |
+          ip link show
+
+          echo "=== QDISCS ==="
+          tc qdisc show
+
+          echo "=== FILTERS INGRESS ==="
+          tc filter show dev eth0 ingress || true
+
+          echo "=== FILTERS EGRESS ==="
+          tc filter show dev eth0 egress || true
+
+          echo "=== BPF NET ==="
+          bpftool net || true
+
+          echo "=== BPF PROGRAMS ==="
+          bpftool prog show || true
+
+          echo "=== BPF LINKS ==="
+          bpftool link show || true
+
       - name: Test module loading
         run: |
           sudo ./build/src/bin/ebpf-packet-loss-emulator \
           --run "list; load --module tc_bernoulli --interface eth0 --attachment-point ingress; exec sleep 15; unload; load -m xdp_bernoulli -i eth0 -a generic; exec sleep 15; exit;" \
           --dump ./logs/dump.txt
+
+      - name: See test results
+        run: cat ./logs/dump.txt
 
       - name: Confirm module loading
         run: |
@@ -166,6 +191,3 @@ jobs:
             echo "error: xdp_bernoulli module failed to load"
             exit 1
           fi
-
-      - name: See test results
-        run: cat ./logs/dump.txt
