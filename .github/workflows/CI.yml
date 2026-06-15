@@ -27,14 +27,14 @@ jobs:
         run: bear --output compile_commands.json -- make clean all
 
       - name: Copy compilation database to build directory
-        run: mv compile_commands.json build/
+        run: mv compile_commands.json build/src/
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ebpf-packet-loss-emulator
           path: |
-            build/
+            build/src/
           retention-days: 1
 
 
@@ -57,7 +57,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ebpf-packet-loss-emulator
-          path: build/
+          path: build/src
 
       - name: Run clang-tidy
         run: |
@@ -87,7 +87,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ebpf-packet-loss-emulator
-          path: build/
+          path: build/src
 
       - name: Run cppcheck
         run: |
@@ -145,14 +145,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ebpf-packet-loss-emulator
-          path: build/
+          path: build/src
       
       - name: Give execute permissions to the binary
-        run: sudo chmod +x build/bin/ebpf-packet-loss-emulator
+        run: sudo chmod +x build/src/bin/ebpf-packet-loss-emulator
 
       - name: Test module loading
         run: |
-          sudo ./build/bin/ebpf-packet-loss-emulator \
+          sudo ./build/src/bin/ebpf-packet-loss-emulator \
           --run "list; load --module tc_bernoulli --interface eth0 --attachment-point ingress; exec sleep 15; unload; load -m xdp_bernoulli -i eth0 -a generic; exec sleep 15; exit;" \
           --dump ./logs/dump.txt
 
