@@ -62,7 +62,7 @@ LDFLAGS := \
 
 LDLIBS := $(LIBBPF_LIBS) -lelf -lz -lreadline
 
-DEPS_SCRIPT := $(ROOT)/scripts/dependencie_manager.sh
+DEPS_SCRIPT := $(ROOT)/scripts/dependency_manager.sh
 
 # ---------------- RULES ----------------
 
