@@ -22,22 +22,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Doxygen
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y doxygen graphviz pip
+      - name: Build documentation site
+        run: make docs
 
-      - name: Install Python dependencies
-        run: |
-          pip install properdocs mkdocs-gen-files mkdocs-material 
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
 
-      - name: Generate Doxygen API
-        run: doxygen Doxyfile
-
-      - name: Build MkDocs site
-        working-directory: docs/website
-        run: npm run build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4

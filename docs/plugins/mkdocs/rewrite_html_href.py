@@ -6,8 +6,6 @@ def on_page_markdown(markdown, page, config, files, **kwargs):
 
     current_dir = PurePosixPath(page.file.src_path).parent
 
-    # Diretório do URL de output — onde o browser "está"
-    # ex: source/development/developing-new-modules/index.html → source/development/developing-new-modules
     current_url_dir = PurePosixPath(page.file.dest_uri).parent
 
     pattern = r"""(<a\s[^>]*href=)(["'])([^"']+)(["'])"""
