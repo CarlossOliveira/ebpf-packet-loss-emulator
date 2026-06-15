@@ -43,7 +43,7 @@ This operation restores the source tree to a clean state without modifying the p
       Previous
    </div>
    <div style="font-weight:600;">
-      ← Usage
+      Usage
    </div>
 </a>
 
@@ -62,7 +62,7 @@ This operation restores the source tree to a clean state without modifying the p
       Next
    </div>
    <div style="font-weight:600;">
-      Architecture Overview →
+      Architecture Overview
    </div>
 </a>
 </div>

@@ -247,7 +247,7 @@ For most packet loss emulation scenarios, TC provides the most flexible executio
       Previous
    </div>
    <div style="font-weight:600;">
-      ← Architecture Overview
+      Architecture Overview
    </div>
 </a>
 
@@ -266,7 +266,7 @@ For most packet loss emulation scenarios, TC provides the most flexible executio
       Next
    </div>
    <div style="font-weight:600;">
-      Modules Implemented →
+      Modules Implemented
    </div>
 </a>
 </div>

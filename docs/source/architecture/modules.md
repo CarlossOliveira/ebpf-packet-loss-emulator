@@ -94,7 +94,7 @@ These statistics provide visibility into module behaviour and facilitate perform
       Previous
    </div>
    <div style="font-weight:600;">
-      ← Networking Stack
+      Networking Stack
    </div>
 </a>
 
@@ -113,7 +113,7 @@ These statistics provide visibility into module behaviour and facilitate perform
       Next
    </div>
    <div style="font-weight:600;">
-      Developing New Modules →
+      Developing New Modules
    </div>
 </a>
 </div>

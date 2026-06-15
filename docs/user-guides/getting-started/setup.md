@@ -50,38 +50,6 @@ make all
 
 Compiled binaries and object files will be generated in the `build/` directory.
 
----
-
-# Uninstallation
-
-## Remove Dependencies
-
-To remove all packages installed by the dependency manager:
-
-Using the installation script:
-
-```bash
-sudo ./scripts/install_dependencies.sh uninstall
-```
-
-Alternatively:
-
-```bash
-sudo make uninstall
-```
-
----
-
-## Remove Build Artifacts
-
-Delete all generated binaries, object files, and intermediate build artifacts:
-
-```bash
-make clean
-```
-
-This operation restores the source tree to a clean state without modifying the project source files.
-
 <div style="display:flex; justify-content:space-between;">
 <a href="../../../README.md"
    style="
@@ -97,7 +65,7 @@ This operation restores the source tree to a clean state without modifying the p
       Previous
    </div>
    <div style="font-weight:600;">
-      ← Home
+      Home
    </div>
 </a>
 
@@ -116,7 +84,7 @@ This operation restores the source tree to a clean state without modifying the p
       Next
    </div>
    <div style="font-weight:600;">
-      Usage →
+      Usage
    </div>
 </a>
 </div>

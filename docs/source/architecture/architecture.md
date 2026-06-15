@@ -264,7 +264,7 @@ These design choices allow the framework to evolve towards more advanced packet 
       Previous
    </div>
    <div style="font-weight:600;">
-      ← Cleanup
+      Cleanup
    </div>
 </a>
 
@@ -283,7 +283,7 @@ These design choices allow the framework to evolve towards more advanced packet 
       Next
    </div>
    <div style="font-weight:600;">
-      Networking Stack →
+      Networking Stack
    </div>
 </a>
 </div>

@@ -245,7 +245,7 @@ The framework supports signal-based control mechanisms:
       Previous
    </div>
    <div style="font-weight:600;">
-      ← Setup
+      Setup
    </div>
 </a>
 
@@ -264,7 +264,7 @@ The framework supports signal-based control mechanisms:
       Next
    </div>
    <div style="font-weight:600;">
-      Cleanup →
+      Cleanup
    </div>
 </a>
 </div>

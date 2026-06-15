@@ -198,7 +198,7 @@ This design enables the framework to evolve beyond packet loss emulation and ser
       Previous
    </div>
    <div style="font-weight:600;">
-      ← Modules Implemented
+      Modules Implemented
    </div>
 </a>
 
@@ -217,7 +217,7 @@ This design enables the framework to evolve beyond packet loss emulation and ser
       Next
    </div>
    <div style="font-weight:600;">
-      Conclusions →
+      Conclusions
    </div>
 </a>
 </div>
