@@ -62,7 +62,7 @@ jobs:
       - name: Run clang-tidy
         run: |
           find src -name "*.c" ! -name "*.bpf.c" -print0 | \
-          xargs -0 clang-tidy -p build/ \
+          xargs -0 clang-tidy -p build/src/ \
             --extra-arg=-std=gnu17 \
             -header-filter=src/ \
             -checks=clang-analyzer-core.*,clang-analyzer-unix.*,bugprone-narrowing-conversions
@@ -92,7 +92,7 @@ jobs:
       - name: Run cppcheck
         run: |
           cppcheck \
-            --project=build/compile_commands.json \
+            --project=build/src/compile_commands.json \
             --std=c17 \
             --enable=all \
             --error-exitcode=1 \
