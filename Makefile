@@ -66,7 +66,7 @@ DEPS_SCRIPT := $(ROOT)/scripts/dependencie_manager.sh
 
 # ---------------- RULES ----------------
 
-all: build docs
+all: build
 
 build: app bpf
 
@@ -97,18 +97,20 @@ docs:
 
 # ---------------- CLEAN ----------------
 
-clean: clean-docs clean-build
+clean: 
 	@echo "Cleaning project..."
+	rm -rf $(BUILD)
+	@echo "Project cleaned successfully."
 
 clean-docs:
 	@echo "Cleaning documentation..."
-	rm -rf $(ROOT)/docs/source/build
+	rm -rf $(BUILD)/docs
 
 	@echo "Documentation cleaned successfully."
 
 clean-build:
 	@echo "Cleaning build artifacts..."
-	rm -rf $(BUILD)
+	rm -rf $(BUILD)/src
 	@echo "Build artifacts cleaned successfully."
 
 # ---------------- OTHER ----------------
