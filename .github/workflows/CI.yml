@@ -150,28 +150,6 @@ jobs:
       - name: Give execute permissions to the binary
         run: sudo chmod +x build/src/bin/ebpf-packet-loss-emulator
 
-      - name: Debug network state
-        run: |
-          sudo ip link show
-
-          echo "=== QDISCS ==="
-          sudo tc qdisc show
-
-          echo "=== FILTERS INGRESS ==="
-          sudo tc filter show dev eth0 ingress || true
-
-          echo "=== FILTERS EGRESS ==="
-          sudo tc filter show dev eth0 egress || true
-
-          echo "=== BPF NET ==="
-          sudo bpftool net || true
-
-          echo "=== BPF PROGRAMS ==="
-          sudo bpftool prog show || true
-
-          echo "=== BPF LINKS ==="
-          sudo bpftool link show || true
-
       - name: Test module loading
         run: |
           sudo ./build/src/bin/ebpf-packet-loss-emulator \
