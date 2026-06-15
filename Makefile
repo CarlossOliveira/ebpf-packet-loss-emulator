@@ -92,6 +92,7 @@ $(BPF_OBJ_DIR)/%.bpf.o: $(KERNELSPACE)/bpf/modules/%.bpf.c
 
 docs:
 	@echo "Generating documentation..."
+	@chmod +x $(DEPS_SCRIPT)
 	$(DEPS_SCRIPT) $@
 	@echo "Documentation generated successfully."
 
