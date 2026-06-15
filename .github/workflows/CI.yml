@@ -152,25 +152,25 @@ jobs:
 
       - name: Debug network state
         run: |
-          ip link show
+          sudo ip link show
 
           echo "=== QDISCS ==="
-          tc qdisc show
+          sudo tc qdisc show
 
           echo "=== FILTERS INGRESS ==="
-          tc filter show dev eth0 ingress || true
+          sudo tc filter show dev eth0 ingress || true
 
           echo "=== FILTERS EGRESS ==="
-          tc filter show dev eth0 egress || true
+          sudo tc filter show dev eth0 egress || true
 
           echo "=== BPF NET ==="
-          bpftool net || true
+          sudo bpftool net || true
 
           echo "=== BPF PROGRAMS ==="
-          bpftool prog show || true
+          sudo bpftool prog show || true
 
           echo "=== BPF LINKS ==="
-          bpftool link show || true
+          sudo bpftool link show || true
 
       - name: Test module loading
         run: |
