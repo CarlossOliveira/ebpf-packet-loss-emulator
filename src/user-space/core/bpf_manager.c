@@ -57,27 +57,27 @@ struct bpf_object *load_bpf_module(app_context_t *ctx)
 		errno = err < 0 ? -err : err;
 		print(ERROR, "Failed to load eBPF object file: %s", path);
 		bpf_object__close(ctx->bpf.object);
-		return NULL;
+		return ctx->bpf.object = NULL;
 	}
 
 	int new_stats_map_fd = open_map(ctx->bpf.object, "stats_map");
 	if (new_stats_map_fd < 0) {
 		print(ERROR, "Failed to open stats map");
 		bpf_object__close(ctx->bpf.object);
-		return NULL;
+		return ctx->bpf.object = NULL;
 	}
 
 	int new_config_map_fd = open_map(ctx->bpf.object, "config_map");
 	if (new_config_map_fd < 0) {
 		print(ERROR, "Failed to open config map");
 		bpf_object__close(ctx->bpf.object);
-		return NULL;
+		return ctx->bpf.object = NULL;
 	}
 
 	if (attach_bpf_program(ctx) <= 0) {
 		print(ERROR, "Failed to attach eBPF program");
 		bpf_object__close(ctx->bpf.object);
-		return NULL;
+		return ctx->bpf.object = NULL;
 	}
 
 	ctx->bpf.maps.stats_map_fd = new_stats_map_fd;
@@ -129,8 +129,6 @@ static int attach_bpf_program(app_context_t *ctx)
 	bool module_is_tc = elf_has_section(elf_fd, "classifier");
 	bool module_is_xdp = elf_has_section(elf_fd, "xdp");
 	close_elf_file(elf_fd);
-
-	printf("obj=%p\n", (void *)ctx->bpf.object);
 
 	// Load the program fd
 	struct bpf_program *prog = bpf_object__find_program_by_name(ctx->bpf.object, "packet_handler");
@@ -209,6 +207,11 @@ static int detach_bpf_program(app_context_t *ctx)
 		return -1;
 	}
 
+	if (!ctx->bpf.object) {
+		print(ERROR, "detach called with NULL bpf_object");
+		return -1;
+	}
+
 	// Determine program type by checking for known sections in the ELF file
 	char bpf_elf_filename[512];
 	snprintf(bpf_elf_filename, sizeof(bpf_elf_filename), "%s/%s.bpf.o", BPF_OBJECT_DIR, ctx->bpf.module_name);
@@ -221,8 +224,6 @@ static int detach_bpf_program(app_context_t *ctx)
 	bool module_is_tc = elf_has_section(elf_fd, "classifier");
 	bool module_is_xdp = elf_has_section(elf_fd, "xdp");
 	close_elf_file(elf_fd);
-
-	printf("obj=%p\n", (void *)ctx->bpf.object);
 
 	// Load the program fd
 	struct bpf_program *prog = bpf_object__find_program_by_name(ctx->bpf.object, "packet_handler");
