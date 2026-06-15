@@ -130,6 +130,8 @@ static int attach_bpf_program(app_context_t *ctx)
 	bool module_is_xdp = elf_has_section(elf_fd, "xdp");
 	close_elf_file(elf_fd);
 
+	printf("obj=%p\n", ctx->bpf.object);
+
 	// Load the program fd
 	struct bpf_program *prog = bpf_object__find_program_by_name(ctx->bpf.object, "packet_handler");
 	if (!prog) {
@@ -219,6 +221,8 @@ static int detach_bpf_program(app_context_t *ctx)
 	bool module_is_tc = elf_has_section(elf_fd, "classifier");
 	bool module_is_xdp = elf_has_section(elf_fd, "xdp");
 	close_elf_file(elf_fd);
+
+	printf("obj=%p\n", ctx->bpf.object);
 
 	// Load the program fd
 	struct bpf_program *prog = bpf_object__find_program_by_name(ctx->bpf.object, "packet_handler");
