@@ -49,22 +49,8 @@ This project is licensed under the GPL-3.0 License.
 
 See the [LICENSE](../LICENSE) file for additional details.
 
-<div style="display:flex; justify-content:space-between;">
-<a href="source/development/developing-new-modules.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Previous
-   </div>
-   <div style="font-weight:600;">
-      ← Developing New Modules
-   </div>
-</a>
-</div>
+<p>
+  <a href="source/development/developing_new_modules.md">
+    <img src="assets/images/buttons/prev_developing_new_modules.svg" align="left">
+  </a>
+</p>

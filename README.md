@@ -76,24 +76,8 @@ The project documentation is organised into several documents covering installat
 
 The complete API reference is available [here](/api/index.html).
 
-<div style="display:flex; justify-content:space-between;">
-
-<a href="docs/user-guides/getting-started/setup.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      text-align:right;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Next
-   </div>
-   <div style="font-weight:600;">
-      Setup 
-   </div>
-</a>
-</div>
+<p>
+  <a href="docs/user-guides/getting-started/setup.md">
+    <img src="docs/assets/images/buttons/next_setup.svg" width="120" align="right">
+  </a>
+</p>

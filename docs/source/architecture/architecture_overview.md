@@ -249,41 +249,11 @@ Several architectural decisions were made to facilitate long-term maintainabilit
 
 These design choices allow the framework to evolve towards more advanced packet impairment mechanisms while preserving a stable user experience and development workflow.
 
-<div style="display:flex; justify-content:space-between;">
-<a href="../../user-guides/getting-started/cleanup.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Previous
-   </div>
-   <div style="font-weight:600;">
-      Cleanup
-   </div>
-</a>
-
-<a href="networking-stack.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      text-align:right;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Next
-   </div>
-   <div style="font-weight:600;">
-      Networking Stack
-   </div>
-</a>
-</div>
+<p>
+  <a href="../../user-guides/getting-started/cleanup.md">
+    <img src="../../assets/images/buttons/prev_cleanup.svg" align="left">
+  </a>
+  <a href="networking_stack.md">
+    <img src="../../assets/images/buttons/next_networking_stack.svg" align="right">
+  </a>
+</p>

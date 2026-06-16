@@ -232,41 +232,11 @@ Use **TC** when:
 
 For most packet loss emulation scenarios, TC provides the most flexible execution environment, whereas XDP provides the highest performance.
 
-<div style="display:flex; justify-content:space-between;">
-<a href="architecture.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Previous
-   </div>
-   <div style="font-weight:600;">
-      Architecture Overview
-   </div>
-</a>
-
-<a href="modules.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      text-align:right;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Next
-   </div>
-   <div style="font-weight:600;">
-      Modules Implemented
-   </div>
-</a>
-</div>
+<p>
+  <a href="architecture_overview.md">
+    <img src="../../assets/images/buttons/prev_architecture_overview.svg" align="left">
+  </a>
+  <a href="modules.md">
+    <img src="../../assets/images/buttons/next_modules.svg" align="right">
+  </a>
+</p>

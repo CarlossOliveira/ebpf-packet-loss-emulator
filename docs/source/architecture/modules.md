@@ -79,41 +79,11 @@ The available metrics include:
 
 These statistics provide visibility into module behaviour and facilitate performance evaluation across different attachment points and execution modes.
 
-<div style="display:flex; justify-content:space-between;">
-<a href="networking-stack.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Previous
-   </div>
-   <div style="font-weight:600;">
-      Networking Stack
-   </div>
-</a>
-
-<a href="../development/developing-new-modules.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      text-align:right;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Next
-   </div>
-   <div style="font-weight:600;">
-      Developing New Modules
-   </div>
-</a>
-</div>
+<p>
+  <a href="networking_stack.md">
+    <img src="../../assets/images/buttons/prev_networking_stack.svg" align="left">
+  </a>
+  <a href="../development/developing_new_modules.md">
+    <img src="../../assets/images/buttons/next_developing_new_modules.svg" align="right">
+  </a>
+</p>

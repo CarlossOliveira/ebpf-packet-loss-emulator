@@ -50,41 +50,11 @@ make all
 
 Compiled binaries and object files will be generated in the `build/` directory.
 
-<div style="display:flex; justify-content:space-between;">
-<a href="../../../README.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Previous
-   </div>
-   <div style="font-weight:600;">
-      Home
-   </div>
-</a>
-
-<a href="usage.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      text-align:right;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Next
-   </div>
-   <div style="font-weight:600;">
-      Usage
-   </div>
-</a>
-</div>
+<p>
+  <a href="../../README.md">
+    <img src="../../assets/images/buttons/prev_home.svg" align="left">
+  </a>
+  <a href="usage.md">
+    <img src="../../assets/images/buttons/next_usage.svg" align="right">
+  </a>
+</p>

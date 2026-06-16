@@ -28,41 +28,11 @@ sudo make uninstall
 
 This operation restores the source tree to a clean state without modifying the project source files.
 
-<div style="display:flex; justify-content:space-between;">
-<a href="usage.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Previous
-   </div>
-   <div style="font-weight:600;">
-      Usage
-   </div>
-</a>
-
-<a href="../../source/architecture/architecture.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      text-align:right;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Next
-   </div>
-   <div style="font-weight:600;">
-      Architecture Overview
-   </div>
-</a>
-</div>
+<p>
+  <a href="usage.md">
+    <img src="../../assets/images/buttons/prev_usage.svg" align="left">
+  </a>
+  <a href="../../source/architecture/architecture_overview.md">
+    <img src="../../assets/images/buttons/next_architecture_overview.svg" align="right">
+  </a>
+</p>

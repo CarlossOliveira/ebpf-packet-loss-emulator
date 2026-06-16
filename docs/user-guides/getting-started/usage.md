@@ -230,41 +230,11 @@ The framework supports signal-based control mechanisms:
 | `SIGTERM`            | Gracefully terminate the application.  |
 | `SIGQUIT` (`Ctrl+\`) | Trigger the module switching workflow. |
 
-<div style="display:flex; justify-content:space-between;">
-<a href="setup.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Previous
-   </div>
-   <div style="font-weight:600;">
-      Setup
-   </div>
-</a>
-
-<a href="cleanup.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      text-align:right;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Next
-   </div>
-   <div style="font-weight:600;">
-      Cleanup
-   </div>
-</a>
-</div>
+<p>
+  <a href="setup.md">
+    <img src="../../assets/images/buttons/prev_setup.svg" align="left">
+  </a>
+  <a href="cleanup.md">
+    <img src="../../assets/images/buttons/next_cleanup.svg" align="right">
+  </a>
+</p>

@@ -1,16 +1,25 @@
 import re
-from pathlib import PurePosixPath
+from pathlib import PurePosixPath, Path
+from mkdocs.structure.files import File
+
+
+# Registry: populated in on_page_markdown, consumed in on_files (next build)
+# For mkdocs serve we use on_page_content to inject into the live files object.
+_pending_svgs: dict[str, Path] = {}  # dest_uri -> abs src path
 
 
 def on_page_markdown(markdown, page, config, files, **kwargs):
 
     current_dir = PurePosixPath(page.file.src_path).parent
-
     current_url_dir = PurePosixPath(page.file.dest_uri).parent
 
-    pattern = r"""(<a\s[^>]*href=)(["'])([^"']+)(["'])"""
+    href_pattern = r"""(<a\s[^>]*href=)(["'])([^"']+)(["'])"""
+    img_pattern  = r"""(<img\s[^>]*src=)(["'])([^"']+)(["'])"""
 
-    def resolve(href):
+    # ------------------------------------------------------------------ #
+    # href resolver                                                        #
+    # ------------------------------------------------------------------ #
+    def resolve_href(href):
         if href.startswith(("http://", "https://", "#", "mailto:", "/")):
             return None
 
@@ -38,21 +47,67 @@ def on_page_markdown(markdown, page, config, files, **kwargs):
         if not target_file:
             return None
 
-        # Diretório do URL de output do destino
         dst_url_dir = PurePosixPath(target_file.dest_uri).parent
-
         relative = _relative_url(current_url_dir, dst_url_dir)
         return relative + fragment
 
-    def replacer(match):
+    # ------------------------------------------------------------------ #
+    # img src resolver                                                     #
+    #                                                                      #
+    # Resolves the SVG on disk, registers it in _pending_svgs under the   #
+    # dest_uri it should have (same URL dir as the page), and rewrites     #
+    # the src to just the filename so it resolves correctly from the page. #
+    # ------------------------------------------------------------------ #
+    def resolve_img(src):
+        if src.startswith(("http://", "https://", "/", "data:")):
+            return None
+        if not src.lower().endswith(".svg"):
+            return None
+
+        src_abs = (Path(page.file.abs_src_path).parent / src).resolve()
+        if not src_abs.exists():
+            return None
+
+        # dest_uri = same folder as page output + just the filename
+        dest_uri = str(current_url_dir / src_abs.name)
+
+        # Add to virtual tree if not already there
+        if not files.get_file_from_path(dest_uri):
+            f = File(
+                path=dest_uri,
+                src_dir=None,          # generated file — no source dir
+                dest_dir=config["site_dir"],
+                use_directory_urls=config["use_directory_urls"],
+                dest_uri=dest_uri,
+            )
+            f.content_bytes = src_abs.read_bytes()
+            files.append(f)
+
+        return src_abs.name
+
+    def href_replacer(match):
         prefix, q_open, href, q_close = match.groups()
-        new_url = resolve(href)
+        new_url = resolve_href(href)
         if new_url is None:
             return match.group(0)
         return f"{prefix}{q_open}{new_url}{q_close}"
 
-    return re.sub(pattern, replacer, markdown, flags=re.DOTALL)
+    def img_replacer(match):
+        prefix, q_open, src, q_close = match.groups()
+        new_src = resolve_img(src)
+        if new_src is None:
+            return match.group(0)
+        return f"{prefix}{q_open}{new_src}{q_close}"
 
+    markdown = re.sub(href_pattern, href_replacer, markdown, flags=re.DOTALL)
+    markdown = re.sub(img_pattern,  img_replacer,  markdown, flags=re.DOTALL)
+
+    return markdown
+
+
+# ------------------------------------------------------------------ #
+# Helpers                                                              #
+# ------------------------------------------------------------------ #
 
 def _relative_url(src_dir: PurePosixPath, dst_dir: PurePosixPath) -> str:
     src_parts = list(src_dir.parts) if str(src_dir) != "." else []

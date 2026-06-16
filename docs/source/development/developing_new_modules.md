@@ -183,41 +183,11 @@ The loader is intentionally unaware of the internal implementation details of in
 
 This design enables the framework to evolve beyond packet loss emulation and serve as a reusable platform for network experimentation, performance evaluation, and advanced traffic engineering research.
 
-<div style="display:flex; justify-content:space-between;">
-<a href="../architecture/modules.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Previous
-   </div>
-   <div style="font-weight:600;">
-      Modules Implemented
-   </div>
-</a>
-
-<a href="../../conclusions.md"
-   style="
-      display:inline-block;
-      padding:6px 16px;
-      border:1px solid #dadde1;
-      border-radius:8px;
-      text-decoration:none;
-      text-align:right;
-      line-height:1.4;
-   ">
-
-   <div style="font-size:0.75rem; color:#6b7280;">
-      Next
-   </div>
-   <div style="font-weight:600;">
-      Conclusions
-   </div>
-</a>
-</div>
+<p>
+  <a href="../architecture/modules.md">
+    <img src="../../assets/images/buttons/prev_modules.svg" align="left">
+  </a>
+  <a href="../../conclusions.md">
+    <img src="../../assets/images/buttons/next_conclusions.svg" align="right">
+  </a>
+</p>

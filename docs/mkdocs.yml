@@ -25,11 +25,11 @@ nav:
       - Installation: user-guides/getting-started/setup.md
       - Cleanup: user-guides/getting-started/cleanup.md
   - Architecture:
-      - Overview: source/architecture/architecture.md
-      - Networking Stack: source/architecture/networking-stack.md
+      - Overview: source/architecture/architecture_overview.md
+      - Networking Stack: source/architecture/networking_stack.md
       - Modules: source/architecture/modules.md
   - Development:
-      - Adding Modules: source/development/developing-new-modules.md
+      - Adding Modules: source/development/developing_new_modules.md
   - Conclusion: conclusions.md
 
   - API Reference: source/api/index.html
