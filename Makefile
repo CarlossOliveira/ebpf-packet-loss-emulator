@@ -106,6 +106,9 @@ clean:
 clean-docs:
 	@echo "Cleaning documentation..."
 	rm -rf $(BUILD)/docs
+	rm -rf $(ROOT)/docs/source/api
+	rm -rf $(ROOT)/.docs-venv
+	rm -rf $(ROOT)/docs/plugins/mkdocs/__pycache__
 
 	@echo "Documentation cleaned successfully."
 
