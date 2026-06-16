@@ -1,5 +1,5 @@
-<svg width="144" height="120" viewBox="0 0 144 120" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="142" height="118" rx="18" ry="18" fill="none" stroke-width="2" opacity=".3" style="stroke:currentColor"/><text x="109" y="43" text-anchor="middle" font-size="24" style="fill:currentColor;opacity:.6">
-        Next
-    </text><text x="72" y="92" text-anchor="middle" font-size="28" font-weight="700" style="fill:#0078c8">
-        Setup
-    </text></svg>
+<svg width="144" height="120" viewBox="0 0 144 120" xmlns="http://www.w3.org/2000/svg" style="color:#6b7280"><style>@media (prefers-color-scheme:dark){:root{color:#fff}}</style><rect x="1" y="1" width="142" height="118" rx="18" ry="18" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"/><text x="109" y="43" text-anchor="middle" font-size="24" fill="currentColor" opacity=".6">
+    Next
+  </text><text x="72" y="92" text-anchor="middle" font-size="28" font-weight="700" fill="#0078c8">
+    Setup
+  </text></svg>
