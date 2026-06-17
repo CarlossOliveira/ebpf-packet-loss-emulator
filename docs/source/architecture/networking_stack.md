@@ -27,7 +27,7 @@ The following symbols are used throughout the networking stack diagrams to repre
 
 | Symbol                                                                                  | Component                          | Description                                                                                             |
 | --------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| <img src="../../assets/images/linux2.png" alt="Linux Kernel" width="40" />              | Linux Kernel                       | Components and subsystems executing within kernel space.                                                |
+| <img src="../../assets/images/linux.png" alt="Linux Kernel" width="40" />               | Linux Kernel                       | Components and subsystems executing within kernel space.                                                |
 | <img src="../../assets/images/user.png" alt="User Space" width="40" />                  | User Space                         | User applications and processes interacting with the networking stack.                                  |
 | <img src="../../assets/images/RAM.png" alt="System Memory" width="40" />                | System Memory (RAM)                | Main memory used to store packet buffers, SKBs, descriptors, and runtime data structures.               |
 | <img src="../../assets/images/CPU.png" alt="CPU" width="40" />                          | CPU                                | Processing units responsible for executing networking and application workloads.                        |
