@@ -4,14 +4,17 @@ CC := gcc
 ROOT := $(CURDIR)
 
 SRC := $(ROOT)/src
-BUILD := $(ROOT)/build/src
+
+BUILD := $(ROOT)/build
+BUILD_SRC := $(BUILD)/build/src
+BUILD_DOCS := $(BUILD)/build/docs
 
 USERSPACE := $(SRC)/user-space
 KERNELSPACE := $(SRC)/kernel-space
 
-BIN_DIR := $(BUILD)/bin
-OBJ_DIR := $(BUILD)/user-space
-BPF_OBJ_DIR := $(BUILD)/kernel-space/bpf/modules
+BIN_DIR := $(BUILD_SRC)/bin
+OBJ_DIR := $(BUILD_SRC)/user-space
+BPF_OBJ_DIR := $(BUILD_SRC)/kernel-space/bpf/modules
 
 BIN := $(BIN_DIR)/ebpf-packet-loss-emulator
 
@@ -98,14 +101,14 @@ docs:
 
 # ---------------- CLEAN ----------------
 
-clean: 
+clean: clean-build clean-docs
 	@echo "Cleaning project..."
 	rm -rf $(BUILD)
 	@echo "Project cleaned successfully."
 
 clean-docs:
 	@echo "Cleaning documentation..."
-	rm -rf $(BUILD)/docs
+	rm -rf $(BUILD_DOCS)
 	rm -rf $(ROOT)/docs/source/api
 	rm -rf $(ROOT)/.docs-venv
 	rm -rf $(ROOT)/docs/plugins/mkdocs/__pycache__
@@ -114,7 +117,7 @@ clean-docs:
 
 clean-build:
 	@echo "Cleaning build artifacts..."
-	rm -rf $(BUILD)/src
+	rm -rf $(BUILD_SRC)
 	@echo "Build artifacts cleaned successfully."
 
 # ---------------- OTHER ----------------
