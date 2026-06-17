@@ -48,7 +48,7 @@ jobs:
       - name: "Debug: List files "
         run: |
           sudo apt-get install -y tree
-          tree ../../..
+          tree .
 
       - name: Upload artifact
         if: steps.check-for-venv.outputs.exists == 'false'
