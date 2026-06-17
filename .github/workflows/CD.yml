@@ -45,6 +45,11 @@ jobs:
       - name: Build documentation
         run: sudo make docs
 
+      - name: "Debug: List files "
+        run: |
+          sudo apt-get install -y tree
+          tree ../../..
+
       - name: Upload artifact
         if: steps.check-for-venv.outputs.exists == 'false'
         uses: actions/upload-artifact@v4
