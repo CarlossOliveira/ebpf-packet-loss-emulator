@@ -74,7 +74,7 @@ The project documentation is organised into several documents covering installat
 
 ### API Reference
 
-The complete API reference is available [here](/api/index.html).
+The complete API reference is available [here](https://carlossoliveira.github.io/ebpf-packet-loss-emulator/source/api/).
 
 <p>
   <a href="docs/user-guides/getting-started/setup.md">

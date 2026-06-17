@@ -25,7 +25,7 @@ with mkdocs_open("README.md", "w") as fd:
         readme
         .replace('<img src="docs/', '<img src="')
         .replace('href="docs/', 'href="')
-        .replace('[here](/api/index.html)','[here](/source/api)')
+        .replace('[here](https://carlossoliveira.github.io/ebpf-packet-loss-emulator/source/api/)','[here](/source/api)')
     )
     fd.write(content)
 
