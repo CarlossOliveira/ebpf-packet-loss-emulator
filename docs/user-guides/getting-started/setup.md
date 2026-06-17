@@ -51,7 +51,7 @@ make all
 Compiled binaries and object files will be generated in the `build/` directory.
 
 <p>
-  <a href="../../README.md">
+  <a href="../../../README.md">
     <img src="../../assets/images/buttons/prev_home.svg" align="left">
   </a>
   <a href="usage.md">
