@@ -201,7 +201,7 @@ This design completely decouples module implementation from the loading infrastr
 The framework automatically discovers all compiled eBPF modules available within the module directory:
 
 ```text
-build/kernel-space/bpf/modules/
+build/src/kernel-space/bpf/modules/
 ```
 
 Compiled module objects may be generated either through the project's Makefile or through the framework setup process. In both cases, the resulting ELF files are placed in the build directory and become available for discovery by the loader.
