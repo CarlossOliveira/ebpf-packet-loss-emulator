@@ -6,8 +6,8 @@ ROOT := $(CURDIR)
 SRC := $(ROOT)/src
 
 BUILD := $(ROOT)/build
-BUILD_SRC := $(BUILD)/build/src
-BUILD_DOCS := $(BUILD)/build/docs
+BUILD_SRC := $(BUILD)/src
+BUILD_DOCS := $(BUILD)/docs
 
 USERSPACE := $(SRC)/user-space
 KERNELSPACE := $(SRC)/kernel-space
