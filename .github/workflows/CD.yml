@@ -1,5 +1,7 @@
 name: CD
 
+run-name: "CD: ${{ github.event.workflow_run.head_commit.message }}"
+
 on:
   workflow_run:
     workflows: ["CI"]
@@ -12,7 +14,7 @@ permissions:
   id-token: write
 
 jobs:
-  document:
+  build-and-deploy-docs:
     runs-on: ubuntu-latest
 
     environment:
@@ -22,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build documentation site
+      - name: Build documentation
         run: sudo make docs
 
       - name: Upload Pages artifact
