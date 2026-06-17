@@ -14,7 +14,7 @@ plugins:
         - plugins/mkdocs/import_to_virtual_file_tree.py
 
 hooks:
-  - plugins/mkdocs/rewrite_html_href.py
+  - plugins/mkdocs/rewrite_html_references.py
 
 markdown_extensions:
   - md_in_html

@@ -2,11 +2,11 @@ import re
 from pathlib import PurePosixPath, Path
 from mkdocs.structure.files import File
 
+'''
+Mkdocs Plugin: Rewrite HTML references
 
-# Registry: populated in on_page_markdown, consumed in on_files (next build)
-# For mkdocs serve we use on_page_content to inject into the live files object.
-_pending_svgs: dict[str, Path] = {}  # dest_uri -> abs src path
-
+Searches for <a href="..."> and <img src="..."> in the markdown and rewrites them to be relative to the page's output location.
+'''
 
 def on_page_markdown(markdown, page, config, files, **kwargs):
 
@@ -16,9 +16,6 @@ def on_page_markdown(markdown, page, config, files, **kwargs):
     href_pattern = r"""(<a\s[^>]*href=)(["'])([^"']+)(["'])"""
     img_pattern  = r"""(<img\s[^>]*src=)(["'])([^"']+)(["'])"""
 
-    # ------------------------------------------------------------------ #
-    # href resolver                                                        #
-    # ------------------------------------------------------------------ #
     def resolve_href(href):
         if href.startswith(("http://", "https://", "#", "mailto:", "/")):
             return None
@@ -51,13 +48,6 @@ def on_page_markdown(markdown, page, config, files, **kwargs):
         relative = _relative_url(current_url_dir, dst_url_dir)
         return relative + fragment
 
-    # ------------------------------------------------------------------ #
-    # img src resolver                                                     #
-    #                                                                      #
-    # Resolves the SVG on disk, registers it in _pending_svgs under the   #
-    # dest_uri it should have (same URL dir as the page), and rewrites     #
-    # the src to just the filename so it resolves correctly from the page. #
-    # ------------------------------------------------------------------ #
     def resolve_img(src):
         if src.startswith(("http://", "https://", "/", "data:")):
             return None
@@ -104,10 +94,6 @@ def on_page_markdown(markdown, page, config, files, **kwargs):
 
     return markdown
 
-
-# ------------------------------------------------------------------ #
-# Helpers                                                              #
-# ------------------------------------------------------------------ #
 
 def _relative_url(src_dir: PurePosixPath, dst_dir: PurePosixPath) -> str:
     src_parts = list(src_dir.parts) if str(src_dir) != "." else []
