@@ -33,12 +33,20 @@ jobs:
           path: ./.docs-venv
         continue-on-error: true
 
+      - name: Check if the artifact was successfully downloaded
+        id: check-for-venv
+        run: |
+          if [ -d ".docs-venv" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build documentation
-        if: steps.download.outcome == 'failure'
         run: sudo make docs
 
       - name: Upload artifact
-        if: steps.download.outcome == 'failure'
+        if: steps.check-for-venv.outputs.exists == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: build-cache
