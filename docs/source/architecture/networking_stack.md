@@ -30,7 +30,7 @@ The following symbols are used throughout the networking stack diagrams to repre
 | <img src="../../assets/images/linux.svg" alt="Linux Kernel" width="40" />               | Linux Kernel                       | Components and subsystems executing within kernel space.                                                |
 | <img src="../../assets/images/user.svg" alt="User Space" width="40" />                  | User Space                         | User applications and processes interacting with the networking stack.                                  |
 | <img src="../../assets/images/RAM.svg" alt="System Memory" width="40" />                | System Memory (RAM)                | Main memory used to store packet buffers, SKBs, descriptors, and runtime data structures.               |
-| <img src="../../assets/images/CPU.svg" alt="CPU" width="40" />                          | CPU                                | Processing units responsible for executing networking and application workloads.                        |
+| <img src="../../assets/images/CPU.png" alt="CPU" width="40" />                          | CPU                                | Processing units responsible for executing networking and application workloads.                        |
 | <img src="../../assets/images/NIC.svg" alt="Network Interface Controller" width="40" /> | Network Interface Controller (NIC) | Hardware device responsible for transmitting and receiving network traffic.                             |
 | <img src="../../assets/images/driver.svg" alt="Network Driver" width="40" />            | Network Driver                     | Software component providing the interface between the Linux networking subsystem and the NIC hardware. |
 
