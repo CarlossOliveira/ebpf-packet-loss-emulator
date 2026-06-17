@@ -25,8 +25,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Attempt to download .docs-venv artifact
+        id: download-docs-venv
+        uses: actions/download-artifact@v4
+        with:
+          name: build-cache
+          path: ./.docs-venv
+        continue-on-error: true
+
       - name: Build documentation
+        if: steps.download.outcome == 'failure'
         run: sudo make docs
+
+      - name: Upload artifact
+        if: steps.download.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-cache
+          path: ./.docs-venv
+          retention-days: 2
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

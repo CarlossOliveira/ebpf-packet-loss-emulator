@@ -35,8 +35,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ebpf-packet-loss-emulator
-          path: |
-            build/src/
+          path: build/src/
           retention-days: 1
 
 
@@ -148,14 +147,20 @@ jobs:
         with:
           name: ebpf-packet-loss-emulator
           path: build/src
-      
+
       - name: Give execute permissions to the binary
         run: sudo chmod +x build/src/bin/ebpf-packet-loss-emulator
+
+      - name: Give execute permmissions to the setup_test_environment.sh script
+        run: sudo chmod +x scripts/setup_test_environment.sh
+
+      - name: Setup test environment
+        run: sudo scripts/setup_test_environment.sh setup
 
       - name: Test module loading
         run: |
           sudo ./build/src/bin/ebpf-packet-loss-emulator \
-          --run "list; load --module tc_bernoulli --interface eth0 --attachment-point ingress; exec sleep 15; unload; load -m xdp_bernoulli -i eth0 -a generic; exec sleep 15; exit;" \
+          --run "list; load --module tc_bernoulli --interface br0 --attachment-point ingress; exec sleep 15; unload; load -m xdp_bernoulli -i br0 -a generic; exec sleep 15; exit;" \
           --dump ./logs/dump.txt
 
       - name: See test results
@@ -171,3 +176,6 @@ jobs:
             echo "error: xdp_bernoulli module failed to load"
             exit 1
           fi
+
+      - name: Cleanup test environment
+        run: sudo scripts/setup_test_environment.sh cleanup
