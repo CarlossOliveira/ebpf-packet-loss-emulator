@@ -78,6 +78,6 @@ The complete API reference is available [here](/api/index.html).
 
 <p>
   <a href="docs/user-guides/getting-started/setup.md">
-    <img src="docs/assets/images/buttons/next_setup.svg" width="120" align="right">
+    <img src="docs/assets/images/buttons/test.svg"  align="right">
   </a>
 </p>
