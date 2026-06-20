@@ -1,7 +1,7 @@
 BPF_CC := clang
 CC := gcc
 
-ROOT := $(CURDIR)
+ROOT := .
 
 SRC := $(ROOT)/src
 
@@ -41,7 +41,7 @@ USER_INCLUDES := \
 BPF_INCLUDES := \
 	-I$(SRC)/shared/include \
 	-I$(KERNELSPACE)/bpf \
-	-I$(KERNELSPACE)/include \
+	-isystem $(KERNELSPACE)/include \
 	-I$(KERNELSPACE)/bpf/utils
 
 APP_FLAGS := -Wall -Wextra -Wpedantic -Werror -fsanitize=address -fsanitize=undefined

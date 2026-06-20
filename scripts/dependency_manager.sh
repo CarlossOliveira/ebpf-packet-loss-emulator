@@ -14,7 +14,7 @@ VERBOSE=${VERBOSE:-0}
 }
 
 # ------------------------------------------------------------
-# Paths (ROOT is deterministic)
+# Paths
 # ------------------------------------------------------------
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 PROJECT_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd -P)
@@ -52,21 +52,34 @@ install_deps() {
 
         apt_install \
             git clang llvm gcc make pkg-config \
-            libelf-dev zlib1g-dev libreadline-dev iproute2 clang-format
+            libelf-dev zlib1g-dev libreadline-dev iproute2 clang-format \
+            python3 python3-venv python3-pip
+
+    elif command -v dnf >/dev/null 2>&1; then
+        echo "[*] Detected Fedora (dnf-based system)"
+
+        $SUDO dnf install -y \
+            git clang llvm gcc make pkgconf-pkg-config \
+            elfutils-libelf-devel zlib-devel readline-devel iproute \
+            clang-tools-extra bpftool \
+            python3 python3-pip python3-virtualenv
 
     elif command -v yum >/dev/null 2>&1; then
         echo "[*] Detected yum-based system"
 
         $SUDO yum install -y \
             git clang llvm gcc make pkgconf-pkg-config \
-            elfutils-libelf-devel zlib-devel readline-devel iproute clang-format
+            elfutils-libelf-devel zlib-devel readline-devel iproute \
+            clang-tools-extra bpftool \
+            python3-pip python3-virtualenv
 
     elif command -v apk >/dev/null 2>&1; then
         echo "[*] Detected Alpine system"
 
         $SUDO apk add \
             git clang llvm gcc make pkgconf \
-            elfutils-dev zlib-dev readline-dev iproute2 musl-dev clang-format
+            elfutils-dev zlib-dev readline-dev iproute2 musl-dev clang-format \
+            python3 py3-pip py3-virtualenv
 
     else
         echo "[!] Unsupported distribution."
@@ -80,7 +93,9 @@ install_deps() {
 install_libbpf_from_packages() {
     if command -v apt-get >/dev/null 2>&1; then
         apt_install libbpf-dev
-        track_pkg "libbpf-dev"
+        return 0
+    elif command -v dnf >/dev/null 2>&1; then
+        $SUDO dnf install -y libbpf-devel
         return 0
     elif command -v yum >/dev/null 2>&1; then
         $SUDO yum install -y libbpf-devel
@@ -136,17 +151,12 @@ find_bpftool() {
     for tool in \
         /usr/local/sbin/bpftool \
         /usr/local/bin/bpftool \
-        "/usr/lib/linux-tools/$KERNEL_RELEASE/bpftool" \
-        /usr/lib/linux-tools/*/bpftool
+        /usr/sbin/bpftool \
+        /usr/bin/bpftool
     do
         [ -x "$tool" ] || continue
         bpftool_works "$tool" && { echo "$tool"; return 0; }
     done
-
-    if command -v bpftool >/dev/null 2>&1; then
-        tool=$(command -v bpftool)
-        bpftool_works "$tool" && { echo "$tool"; return 0; }
-    fi
 
     return 1
 }
@@ -159,7 +169,13 @@ install_bpftool() {
         return
     fi
 
-    echo "[*] No packaged bpftool found, building from kernel..."
+    # Fedora shortcut (IMPORTANT FIX)
+    if command -v dnf >/dev/null 2>&1; then
+        $SUDO dnf install -y bpftool
+        return
+    fi
+
+    echo "[*] Falling back to kernel build..."
 
     rm -rf "$LINUX_DIR"
     git clone --depth=1 https://github.com/torvalds/linux.git "$LINUX_DIR"
@@ -193,52 +209,37 @@ generate_vmlinux_h() {
     echo "[+] Generated $VMLINUX_H"
 }
 
+# ------------------------------------------------------------
+# Docs
+# ------------------------------------------------------------
 install_documentation_dependencies() {
     echo "[*] Installing documentation dependencies..."
 
     if command -v apt-get >/dev/null 2>&1; then
         apt_install python3-pip python3-venv doxygen graphviz
+    elif command -v dnf >/dev/null 2>&1; then
+        $SUDO dnf install -y python3-pip python3-virtualenv doxygen graphviz
     elif command -v yum >/dev/null 2>&1; then
-        $SUDO yum install -y python3-pip python3-venv doxygen graphviz
+        $SUDO yum install -y python3-pip python3-virtualenv doxygen graphviz
     elif command -v apk >/dev/null 2>&1; then
-        $SUDO apk add python3 py3-pip py3-venv doxygen graphviz
+        $SUDO apk add python3 py3-pip py3-virtualenv doxygen graphviz
     else
         echo "[!] Unsupported distribution."
         exit 1
     fi
 
-    # --------------------------------------------------
-    # Create venv only if it does not exist
-    # --------------------------------------------------
     if [ ! -d "$DOC_VENV" ]; then
-        echo "[*] Creating virtual environment..."
         python3 -m venv "$DOC_VENV"
-    else
-        echo "[*] Reusing existing virtual environment..."
     fi
 
     VENV_PY="$DOC_VENV/bin/python"
 
-    # sanity check (prevents broken venv issues)
-    if [ ! -x "$VENV_PY" ]; then
-        echo "[!] Broken venv detected. Recreating..."
-        rm -rf "$DOC_VENV"
-        python3 -m venv "$DOC_VENV"
-    fi
-
-    # upgrade pip always (cheap + safe)
     "$VENV_PY" -m pip install --upgrade pip
 
-    # install requirements only if needed
     if [ ! -f "$DOC_VENV/.deps_installed" ]; then
-        echo "[*] Installing python dependencies..."
         "$VENV_PY" -m pip install -r "$PROJECT_ROOT/docs/requirements.txt"
         touch "$DOC_VENV/.deps_installed"
-    else
-        echo "[*] Python dependencies already installed"
     fi
-
-    echo "[+] Docs environment ready."
 }
 
 # ------------------------------------------------------------
@@ -249,20 +250,18 @@ build_docs() {
 
     mkdir -p "$PROJECT_ROOT/docs/source/api"
 
-    doxygen "$(realpath "$PROJECT_ROOT/docs/Doxyfile")"
+    doxygen "$PROJECT_ROOT/docs/Doxyfile"
 
     MKDOCS="$DOC_VENV/bin/mkdocs"
-
-    [ -x "$MKDOCS" ] || {
-        echo "[!] mkdocs not installed in venv"
-        exit 1
-    }
 
     "$MKDOCS" build -f "docs/mkdocs.yml" -d "$PROJECT_ROOT/build/docs"
 
     echo "[+] Docs built"
 }
 
+# ------------------------------------------------------------
+# UNINSTALL (SAFE + FEDORA COMPATIBLE)
+# ------------------------------------------------------------
 uninstall() {
     echo "[*] Uninstalling project artifacts..."
 
@@ -270,13 +269,20 @@ uninstall() {
     rm -rf "$LIBBPF_DIR" "$LINUX_DIR"
     rm -rf "$DOC_VENV"
 
-    $SUDO rm -f /usr/local/lib/libbpf.*
-    $SUDO rm -f /usr/local/lib64/libbpf.*
-    $SUDO rm -rf /usr/local/include/bpf
-    $SUDO rm -f /usr/local/lib/pkgconfig/libbpf.pc
-
-    $SUDO rm -f /usr/local/bin/bpftool
-    $SUDO rm -f /usr/local/sbin/bpftool
+    # Only remove local manual installs
+    for f in \
+        /usr/local/bin/bpftool \
+        /usr/local/sbin/bpftool \
+        /usr/local/lib/libbpf.* \
+        /usr/local/lib64/libbpf.* \
+        /usr/local/lib/pkgconfig/libbpf.pc \
+        /usr/local/include/bpf
+    do
+        if [ -e "$f" ]; then
+            echo "[*] Removing $f"
+            $SUDO rm -rf "$f"
+        fi
+    done
 
     if command -v ldconfig >/dev/null 2>&1; then
         $SUDO ldconfig
