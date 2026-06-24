@@ -8,6 +8,7 @@
 
 #include <bpf/bpf.h>
 #include <stdlib.h>
+#include <string.h>
 
 void config_module_command(app_context_t *ctx, char **input)
 {
@@ -22,27 +23,34 @@ void config_module_command(app_context_t *ctx, char **input)
 			return;
 		}
 
-		const char **raw_config_parameters = (const char **)(input + 1);
-		for (int arg = 1; raw_config_parameters[arg]; arg++) {
-			char **kv = strsplit(raw_config_parameters[arg], '=', 2);
+		for (int arg = 1; input[arg]; arg++) {
+			char **kv = strsplit(input[arg], '=', 2);
+
 			if (!kv || !kv[0] || !kv[1]) {
-				print(ERROR, "Invalid parameter format: %s. Expected format is key=value. Skipping...",
-				      raw_config_parameters[arg]);
+				print(ERROR, "Invalid parameter format: Expected key=value, got %s", input[arg]);
+				strsplit_free(kv);
 				continue;
 			}
 
-			char *key = kv[0];
+			if (strcmp(ctx->bpf.config_keys[0], kv[0]) != 0) {
+				print(ERROR, "Unknown config key: %s", kv[0]);
+				print(NULL, "        Valid config options:");
+				for (int i = 0; i < MAX_CONFIG_ENTRIES && strlen(ctx->bpf.config_keys[i]) > 0; i++) {
+					print(NULL, "          - %s", ctx->bpf.config_keys[i]);
+				}
+				strsplit_free(kv);
+				continue;
+			}
+
 			uint64_t value = strtoull(kv[1], NULL, 10);
 
-			if (bpf_map_update_elem(ctx->bpf.maps.config_map_fd, key, &value, BPF_ANY) != 0)
-				print(ERROR,
-				      "Failed to update config map for "
-				      "parameter '%s'",
-				      kv[0]);
-			else
+			if (bpf_map_update_elem(ctx->bpf.maps.config_map_fd, kv[0], &value, BPF_ANY) != 0) {
+				print(ERROR, "Failed to update config param '%s'", kv[0]);
+			} else {
 				print(SUCCESS, "Parameter '%s' updated to %lu", kv[0], (unsigned long)value);
+			}
+
 			strsplit_free(kv);
 		}
-		print(SUCCESS, "Configuration updated successfully");
 	}
 }

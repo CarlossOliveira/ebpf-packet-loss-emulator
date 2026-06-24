@@ -15,80 +15,71 @@ VETH2_BR="veth2-br"
 IP1="10.0.0.1/24"
 IP2="10.0.0.2/24"
 
-netns_exists() {
-    ip netns list | grep -qw "$1"
+cleanup() {
+    echo "[*] Cleanup..."
+
+    ip netns del "$NS1" 2>/dev/null || true
+    ip netns del "$NS2" 2>/dev/null || true
+    ip link del "$BR" 2>/dev/null || true
+
+    echo "[*] Done."
 }
 
-link_exists() {
-    ip link show "$1" >/dev/null 2>&1
-}
+setup() {
+    echo "[*] Setting up clean bridge datapath..."
 
-cleanup_test_environment() {
-    echo "[*] Cleaning up test environment..."
+    cleanup
 
-    if netns_exists "$NS1"; then
-        sudo ip netns delete "$NS1" || true
-    fi
+    # namespaces
+    ip netns add "$NS1"
+    ip netns add "$NS2"
 
-    if netns_exists "$NS2"; then
-        sudo ip netns delete "$NS2" || true
-    fi
+    # bridge
+    ip link add "$BR" type bridge
+    ip link set "$BR" up
 
-    link_exists "$VETH1_BR" && sudo ip link delete "$VETH1_BR" || true
-    link_exists "$VETH2_BR" && sudo ip link delete "$VETH2_BR" || true
+    # disable offloads (evita bypass estranho)
+    ethtool -K "$BR" gro off gso off tso off 2>/dev/null || true
 
-    link_exists "$BR" && sudo ip link delete "$BR" || true
-}
+    # veth pairs
+    ip link add "$VETH1" type veth peer name "$VETH1_BR"
+    ip link add "$VETH2" type veth peer name "$VETH2_BR"
 
-setup_test_environment() {
-    echo "[*] Setting up test environment..."
+    # move one side into namespaces
+    ip link set "$VETH1" netns "$NS1"
+    ip link set "$VETH2" netns "$NS2"
 
-    # Garante estado limpo
-    cleanup_test_environment
+    # attach bridge side
+    ip link set "$VETH1_BR" master "$BR"
+    ip link set "$VETH2_BR" master "$BR"
 
-    echo "[*] Creating network namespaces..."
-    sudo ip netns add "$NS1"
-    sudo ip netns add "$NS2"
+    ip link set "$VETH1_BR" up
+    ip link set "$VETH2_BR" up
 
-    echo "[*] Creating bridge..."
-    sudo ip link add "$BR" type bridge
-    sudo ip link set "$BR" up
+    # bring up namespace interfaces
+    ip netns exec "$NS1" ip link set lo up
+    ip netns exec "$NS2" ip link set lo up
 
-    echo "[*] Creating veth pairs..."
-    sudo ip link add "$VETH1" type veth peer name "$VETH1_BR"
-    sudo ip link add "$VETH2" type veth peer name "$VETH2_BR"
+    ip netns exec "$NS1" ip link set "$VETH1" up
+    ip netns exec "$NS2" ip link set "$VETH2" up
 
-    echo "[*] Moving interfaces to namespaces..."
-    sudo ip link set "$VETH1" netns "$NS1"
-    sudo ip link set "$VETH2" netns "$NS2"
+    # IPs directly on veth (CORRETO)
+    ip netns exec "$NS1" ip addr add "$IP1" dev "$VETH1"
+    ip netns exec "$NS2" ip addr add "$IP2" dev "$VETH2"
 
-    echo "[*] Connecting bridge ports..."
-    sudo ip link set "$VETH1_BR" master "$BR"
-    sudo ip link set "$VETH2_BR" master "$BR"
+    echo "[*] Forcing ARP resolution..."
+    ip netns exec "$NS1" ping -c1 10.0.0.2 >/dev/null || true
+    ip netns exec "$NS2" ping -c1 10.0.0.1 >/dev/null || true
 
-    sudo ip link set "$VETH1_BR" up
-    sudo ip link set "$VETH2_BR" up
-
-    echo "[*] Bringing up loopback..."
-    sudo ip netns exec "$NS1" ip link set lo up
-    sudo ip netns exec "$NS2" ip link set lo up
-
-    echo "[*] Configuring IP addresses..."
-    sudo ip netns exec "$NS1" ip addr replace "$IP1" dev "$VETH1"
-    sudo ip netns exec "$NS2" ip addr replace "$IP2" dev "$VETH2"
-
-    sudo ip netns exec "$NS1" ip link set "$VETH1" up
-    sudo ip netns exec "$NS2" ip link set "$VETH2" up
-
-    echo "[*] Environment ready."
+    echo "[*] DONE. Traffic goes through br0."
 }
 
 case "${1:-}" in
     setup)
-        setup_test_environment
+        setup
         ;;
     cleanup)
-        cleanup_test_environment
+        cleanup
         ;;
     *)
         echo "Usage: $0 {setup|cleanup}"

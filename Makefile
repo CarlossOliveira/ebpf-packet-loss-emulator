@@ -1,7 +1,7 @@
 BPF_CC := clang
 CC := gcc
 
-ROOT := .
+ROOT := $(CURDIR)
 
 SRC := $(ROOT)/src
 

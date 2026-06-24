@@ -104,7 +104,8 @@ int main(const int argc, const char *argv[])
 	cli(ctx);
 
 cleanup:
-	dump_stats(ctx);
+	if (ctx->bpf.maps.stats_map_fd > 0)
+		dump_stats(ctx);
 
 	if (cleanup(ctx) != 0 || (dump_flag_index != -1 && fclose(stdout) != 0)) {
 		print(ERROR, "Cleanup failed");
