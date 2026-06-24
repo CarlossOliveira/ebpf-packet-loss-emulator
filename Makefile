@@ -41,15 +41,37 @@ USER_INCLUDES := \
 BPF_INCLUDES := \
 	-I$(SRC)/shared/include \
 	-I$(KERNELSPACE)/bpf \
-	-isystem $(KERNELSPACE)/include \
+	-I$(KERNELSPACE)/include \
 	-I$(KERNELSPACE)/bpf/utils
 
-APP_FLAGS := -Wall -Wextra -Wpedantic -Werror -fsanitize=address -fsanitize=undefined
-BPF_FLAGS := -Wall -Wextra
+APP_FLAGS := \
+	-Wall \
+	-Wextra \
+	-Wpedantic \
+	-Werror \
+	-fsanitize=address \
+	-fsanitize=undefined
 
-CFLAGS := -O2 -g -std=gnu17 -MMD -MP $(APP_FLAGS) $(USER_INCLUDES) $(LIBBPF_CFLAGS)
+BPF_FLAGS := \
+	-Wall \
+	-Wextra
 
-BPF_CFLAGS := -O2 -g -target bpf $(BPF_FLAGS) $(BPF_INCLUDES)
+CFLAGS := \
+	-O2 \
+	-g \
+	-std=gnu17 \
+	-MMD \
+	-MP \
+	$(APP_FLAGS) \
+	$(USER_INCLUDES) \
+	$(LIBBPF_CFLAGS)
+
+BPF_CFLAGS := \
+	-O2 \
+	-g \
+	-target bpf \
+	$(BPF_FLAGS) \
+	$(BPF_INCLUDES)
 
 DEFS := \
 	-DPROJECT_ROOT=\"$(ROOT)\" \
@@ -64,8 +86,6 @@ LDFLAGS := \
 	-fsanitize=undefined
 
 LDLIBS := $(LIBBPF_LIBS) -lelf -lz -lreadline
-
-DEPS_SCRIPT := $(ROOT)/scripts/dependency_manager.sh
 
 # ---------------- RULES ----------------
 

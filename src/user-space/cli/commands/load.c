@@ -21,12 +21,18 @@ void load_module_command(app_context_t *ctx, char **input)
 			return;
 		}
 
+		if (strlen(ctx->bpf.module_name) > 0) {
+			print(WARNING, "A module is already loaded: %s. Unload it first before loading a new one.",
+			      ctx->bpf.module_name);
+			return;
+		}
+
 		char attachment_points[40] = {0};
 		char interface[IFNAMSIZ] = {0};
 		char module_name[256] = {0};
 
 		int arg = 1; // Start from 1 to skip the "load" command itself
-		int flags_chosen = 0;
+		int attachment_point_flag = 0, module_flag = 0, interface_flag = 0;
 		while (input[arg]) {
 			const char *current_arg = input[arg];
 
@@ -39,7 +45,7 @@ void load_module_command(app_context_t *ctx, char **input)
 				snprintf(attachment_points, sizeof(attachment_points), "%s", input[arg + 1]);
 				attachment_points[sizeof(attachment_points) - 1] = '\0';
 
-				flags_chosen++;
+				attachment_point_flag++;
 				arg++; // Skip the interface name argument since we've already processed it
 			} else if (strcmp(current_arg, "--module") == 0 || strcmp(current_arg, "-m") == 0) {
 				if (!input[arg + 1]) {
@@ -50,7 +56,7 @@ void load_module_command(app_context_t *ctx, char **input)
 				snprintf(module_name, sizeof(module_name), "%s", input[arg + 1]);
 				module_name[sizeof(module_name) - 1] = '\0';
 
-				flags_chosen++;
+				module_flag++;
 				arg++; // Skip the interface name argument since we've already processed it
 			} else if (strcmp(current_arg, "--interface") == 0 || strcmp(current_arg, "-i") == 0) {
 				if (!input[arg + 1]) {
@@ -61,7 +67,7 @@ void load_module_command(app_context_t *ctx, char **input)
 				snprintf(interface, sizeof(interface), "%s", input[arg + 1]);
 				interface[sizeof(interface) - 1] = '\0';
 
-				flags_chosen++;
+				interface_flag++;
 				arg++; // Skip the interface name argument since we've already processed it
 			} else {
 				print(ERROR, "Unknown argument: %s.", input[arg]);
@@ -75,7 +81,9 @@ void load_module_command(app_context_t *ctx, char **input)
 		    (strlen(interface) == 0 && strlen(ctx->interface.default_interface_name) == 0) ||
 		    (strlen(attachment_points) == 0 && ctx->interface.default_tc_attach_points == 0 &&
 		     ctx->interface.default_xdp_attach_point == 0) ||
-		    flags_chosen == 0 || flags_chosen > 3) {
+		    attachment_point_flag > 1 ||
+			module_flag > 1 ||
+			interface_flag > 1) {
 			print(ERROR, "Module name and interface are required. Usage: load --module \"<module_name>\" "
 				     "--interface \"<interface_name>\"");
 			return;

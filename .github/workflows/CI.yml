@@ -96,6 +96,7 @@ jobs:
             --project=build/src/compile_commands.json \
             --std=c17 \
             --enable=all \
+            --check-level=exhaustive \
             --error-exitcode=1 \
             --suppress=unknownMacro \
             --suppress=missingIncludeSystem \

@@ -36,7 +36,8 @@ void remove_char(char *str, char c)
 	if (!str)
 		return;
 
-	char *src = str, *dst = str;
+	const char *src = str;
+	char *dst = str;
 
 	while (*src) {
 		if (*src != c)

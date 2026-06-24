@@ -71,6 +71,7 @@ void set_module(app_context_t *ctx, char *module_name)
 	ctx->bpf.object = load_bpf_module(ctx);
 	if (ctx->bpf.object == NULL) {
 		print(ERROR, "Failed to attach module: %s", module_name);
+		ctx->bpf.module_name[0] = '\0'; // Clear the module name on failure
 	} else {
 		print(SUCCESS, "Module '%s' loaded successfully", ctx->bpf.module_name);
 
