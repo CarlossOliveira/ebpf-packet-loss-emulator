@@ -21,6 +21,8 @@ BIN := $(BIN_DIR)/ebpf-packet-loss-emulator
 PKG_CONFIG_PATH := /usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig$(if $(PKG_CONFIG_PATH),:$(PKG_CONFIG_PATH))
 export PKG_CONFIG_PATH
 
+DEPS_SCRIPT := $(ROOT)/scripts/dependency_manager.sh
+
 LIBBPF_CFLAGS := $(shell pkg-config --cflags libbpf 2>/dev/null)
 LIBBPF_LIBS := $(shell pkg-config --libs libbpf 2>/dev/null)
 
