@@ -33,5 +33,5 @@ requests==2.34.2
 six==1.17.0
 soupsieve==2.8.4
 typing_extensions==4.15.0
-urllib3==2.7.0
+urllib3==2.8.0
 watchdog==6.0.0
